@@ -195,6 +195,17 @@ export default function PortalPage() {
               <h3 className="font-bold text-navy">Member Assistant</h3>
               <p className="text-sm text-gray-600 mt-1">Ask questions about EMA</p>
             </Link>
+
+            {userProfile?.role === 'org_admin' && (
+              <Link
+                href="/portal/org/profile"
+                className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
+              >
+                <div className="text-2xl mb-2">⚙️</div>
+                <h3 className="font-bold text-navy">Manage Organization</h3>
+                <p className="text-sm text-gray-600 mt-1">Org profile & team settings</p>
+              </Link>
+            )}
           </div>
         </div>
       </section>
