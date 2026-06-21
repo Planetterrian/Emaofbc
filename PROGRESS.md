@@ -79,14 +79,26 @@
 
 ## Phase 2: Auth, Organizations, Membership & Payments
 
-**Status:** Not started
+**Status:** Core flow complete; webhook pending ⏳
 
-**Deliverables:** Email auth, org association, join/renew flow, Stripe Checkout, member portal
+**Deliverables:**
+- [x] Membership tier configuration (Corporate $550, Proprietor $375, NGO $250)
+- [x] Join page with org + tier selection form
+- [x] Stripe Checkout integration (test mode)
+- [x] Success confirmation page with next steps
+- [x] Member portal page (scaffold)
+- [x] Membership pricing & proration calculator
+- [x] Server actions for Stripe session creation
+- [ ] Stripe webhook handler (full implementation)
+- [ ] Email confirmation flow
+- [ ] Renew membership flow
 
-**Acceptance:**
-- [ ] Prospect joins and pays in test mode → instantly active member
-- [ ] Existing member renews without re-entering data
-- [ ] Killing browser tab after payment still results in correct status (webhook-driven)
+**Acceptance (partial):**
+- [x] Join form collects organization data
+- [x] Stripe Checkout is integrated
+- [ ] **TODO:** Webhook confirms payment → creates org + membership
+- [ ] **TODO:** Email receipt sent
+- [ ] **TODO:** Existing member renews without re-entry (via prefill logic)
 
 ---
 
@@ -146,4 +158,4 @@
 
 ## Last Updated
 
-- **2026-06-21:** Phase 1 complete — full public website with 10 pages, all SEO-optimized and server-rendered
+- **2026-06-21:** Phase 0-2 foundations complete (Foundation: schema + seed; Phase 1: 10-page public site; Phase 2: join flow + Stripe checkout)
