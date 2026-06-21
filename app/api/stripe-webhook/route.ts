@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature } from '@/app/actions';
 import { sendEmail } from '@/lib/mailer';
+import { getEmailTemplate, EmailData } from '@/lib/email-templates';
 import { getMembershipExpiry, MembershipTier } from '@/lib/membership';
 import { createServiceRoleClient } from '@/lib/supabase';
 import Stripe from 'stripe';
@@ -94,34 +95,17 @@ async function handleChargeSucceeded(charge: Stripe.Charge): Promise<void> {
     throw updateError;
   }
 
-  // Send confirmation email
-  const confirmationHtml = `
-    <h2>Welcome to EMA of BC!</h2>
-    <p>Thank you for joining the Environmental Managers Association of BC.</p>
-    <h3>Your Membership Details</h3>
-    <ul>
-      <li><strong>Organization:</strong> ${orgName}</li>
-      <li><strong>Tier:</strong> ${orgType.replace(/_/g, ' ').toUpperCase()}</li>
-      <li><strong>Valid Through:</strong> ${membershipEnd.toLocaleDateString()}</li>
-      <li><strong>Amount Paid:</strong> $${(charge.amount / 100).toFixed(2)}</li>
-    </ul>
-    <p>Your organization members can now:</p>
-    <ul>
-      <li>Register for events at member pricing</li>
-      <li>Access professional development credits</li>
-      <li>Participate in awards submissions</li>
-      <li>View the member directory</li>
-    </ul>
-    <p>For questions, contact <a href="mailto:membership@emaofbc.com">membership@emaofbc.com</a></p>
-  `;
-
+  // Send confirmation email using template
   try {
-    await sendEmail(
-      orgEmail,
-      '✓ Welcome to EMA of BC - Membership Confirmed',
-      confirmationHtml,
-      { replyTo: 'membership@emaofbc.com' }
-    );
+    const data: EmailData = {
+      orgName,
+      tier: orgType,
+      amount: charge.amount / 100,
+      paidThrough: membershipEnd.toLocaleDateString(),
+      portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://emaofbc.com'}/portal/org/profile`,
+    };
+    const { subject, html } = getEmailTemplate('membership-confirmation', data);
+    await sendEmail(orgEmail, subject, html, { replyTo: 'membership@emaofbc.com' });
   } catch (emailError) {
     console.error('Failed to send confirmation email:', emailError);
     // Don't throw - email failure shouldn't block the payment processing

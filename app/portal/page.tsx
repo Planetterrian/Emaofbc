@@ -196,6 +196,15 @@ export default function PortalPage() {
               <p className="text-sm text-gray-600 mt-1">Ask questions about EMA</p>
             </Link>
 
+            <Link
+              href="/portal/notifications"
+              className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
+            >
+              <div className="text-2xl mb-2">🔔</div>
+              <h3 className="font-bold text-navy">Notifications</h3>
+              <p className="text-sm text-gray-600 mt-1">Manage email preferences</p>
+            </Link>
+
             {userProfile?.role === 'org_admin' && (
               <Link
                 href="/portal/org/profile"
