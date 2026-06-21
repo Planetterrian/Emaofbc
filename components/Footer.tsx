@@ -49,13 +49,13 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/renew" className="text-gray-300 hover:text-white">
-                  Renew Membership
+                <Link href="/portal" className="text-gray-300 hover:text-white">
+                  Member Portal
                 </Link>
               </li>
               <li>
-                <Link href="/benefits" className="text-gray-300 hover:text-white">
-                  Member Benefits
+                <Link href="/member-assistant" className="text-gray-300 hover:text-white">
+                  Ask AI Assistant
                 </Link>
               </li>
             </ul>
