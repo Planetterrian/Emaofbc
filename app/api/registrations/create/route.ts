@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase';
+import { sendEmail } from '@/lib/mailer';
+import { getEmailTemplate, EmailData } from '@/lib/email-templates';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,6 +96,44 @@ export async function POST(req: NextRequest) {
         { error: 'Failed to create registration' },
         { status: 500 }
       );
+    }
+
+    // Fetch event details for confirmation email
+    const eventResult = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .single();
+
+    if (eventResult.data) {
+      try {
+        const event = eventResult.data;
+        const eventDate = new Date(event.starts_at).toLocaleDateString('en-CA', {
+          weekday: 'long',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        });
+        const eventTime = new Date(event.starts_at).toLocaleTimeString('en-CA', {
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+
+        const emailData: EmailData = {
+          eventTitle: event.title,
+          eventDate,
+          eventTime,
+          eventLocation: event.venue || 'TBD',
+          calendarDownloadUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://emaofbc.com'}/events/${eventId}/calendar.ics`,
+          eventUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://emaofbc.com'}/events/${eventId}`,
+        };
+
+        const { subject, html } = getEmailTemplate('event-registration-confirmation', emailData);
+        await sendEmail(email, subject, html);
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+        // Don't fail the registration if email fails
+      }
     }
 
     return NextResponse.json({ success: true, registration: regResult.data });

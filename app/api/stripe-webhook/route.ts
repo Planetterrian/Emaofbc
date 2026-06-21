@@ -12,6 +12,147 @@ async function handleChargeSucceeded(charge: Stripe.Charge): Promise<void> {
   const supabase = createServiceRoleClient();
 
   const metadata = charge.metadata || {};
+
+  // Check if this is an event registration or membership payment
+  if (metadata.eventId) {
+    await handleEventRegistrationCharge(supabase, charge);
+  } else {
+    await handleMembershipCharge(supabase, charge);
+  }
+}
+
+async function handleEventRegistrationCharge(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  charge: Stripe.Charge
+): Promise<void> {
+  const metadata = charge.metadata || {};
+  const eventId = metadata.eventId as string;
+  const eventTitle = metadata.eventTitle as string;
+  const userEmail = metadata.userEmail as string;
+  const userName = metadata.userName as string;
+
+  if (!eventId || !userEmail || !userName) {
+    console.error('Missing required event metadata:', { eventId, userEmail, userName });
+    throw new Error('Missing required event metadata');
+  }
+
+  // Find or create user
+  let { data: user } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', userEmail)
+    .single();
+
+  let userId = user?.id;
+
+  if (!user) {
+    // Extract domain for org lookup
+    const emailDomain = userEmail.split('@')[1];
+    let orgId = null;
+
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('email_domain', emailDomain)
+      .single();
+
+    if (org) {
+      orgId = org.id;
+    }
+
+    // Create new user
+    const { data: newUser, error: userError } = await supabase
+      .from('users')
+      .insert({
+        email: userEmail,
+        full_name: userName,
+        org_id: orgId,
+        role: 'employee',
+      })
+      .select()
+      .single();
+
+    if (userError) {
+      console.error('Failed to create user:', userError);
+      throw userError;
+    }
+
+    userId = newUser.id;
+  }
+
+  // Check if registration already exists
+  const { data: existingReg } = await supabase
+    .from('registrations')
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('user_id', userId)
+    .single();
+
+  if (existingReg) {
+    console.warn(`User ${userId} already registered for event ${eventId}`);
+    return;
+  }
+
+  // Create registration
+  const { error: regError } = await supabase
+    .from('registrations')
+    .insert({
+      event_id: eventId,
+      user_id: userId,
+      org_id: user?.org_id || null,
+      payment_status: 'paid',
+      price_paid_cents: charge.amount,
+      attended: false,
+      pd_credit_recorded: false,
+    });
+
+  if (regError) {
+    console.error('Failed to create registration:', regError);
+    throw regError;
+  }
+
+  // Fetch event details for confirmation email
+  const { data: event } = await supabase
+    .from('events')
+    .select('*')
+    .eq('id', eventId)
+    .single();
+
+  if (event) {
+    try {
+      const eventDate = new Date(event.starts_at).toLocaleDateString('en-CA', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+      const eventTime = new Date(event.starts_at).toLocaleTimeString('en-CA', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+      const emailData: EmailData = {
+        eventTitle: event.title,
+        eventDate,
+        eventTime,
+        eventLocation: event.venue || 'TBD',
+        calendarDownloadUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://emaofbc.com'}/events/${eventId}/calendar.ics`,
+        eventUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://emaofbc.com'}/events/${eventId}`,
+      };
+
+      const { subject, html } = getEmailTemplate('event-registration-confirmation', emailData);
+      await sendEmail(userEmail, subject, html);
+    } catch (emailError) {
+      console.error('Failed to send event registration email:', emailError);
+      // Don't fail the registration if email fails
+    }
+  }
+
+  console.log(`Successfully processed event registration for user ${userId} to event ${eventId}`);
+}
+
+async function handleMembershipCharge(supabase: ReturnType<typeof createServiceRoleClient>, charge: Stripe.Charge): Promise<void> {
+  const metadata = charge.metadata || {};
   const orgName = metadata.orgName as string;
   const orgType = metadata.orgType as MembershipTier;
   const orgEmail = metadata.orgEmail as string;
