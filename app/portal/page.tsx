@@ -99,6 +99,15 @@ export default function PortalPage() {
           <h2 className="text-2xl font-bold text-navy mb-8">Quick Links</h2>
           <div className="grid md:grid-cols-4 gap-6">
             <Link
+              href="/portal/pd-credits"
+              className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
+            >
+              <div className="text-2xl mb-2">📊</div>
+              <h3 className="font-bold text-navy">PD Credits</h3>
+              <p className="text-sm text-gray-600 mt-1">Track your professional development</p>
+            </Link>
+
+            <Link
               href="/events"
               className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
             >

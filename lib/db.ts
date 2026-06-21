@@ -5,6 +5,9 @@ import type {
   User,
   Content,
   Sponsorship,
+  Membership,
+  Registration,
+  PDCredit,
 } from './types';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -176,6 +179,100 @@ export async function getSponsorshipsForEvent(eventId: string): Promise<Sponsors
       .eq('event_id', eventId)
       .eq('payment_status', 'paid')
       .order('tier');
+    return data || [];
+  } catch {
+    return [];
+  }
+}
+
+// Users
+export async function getUserByEmail(email: string): Promise<User | null> {
+  try {
+    if (!supabase) return null;
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+    return data || null;
+  } catch {
+    return null;
+  }
+}
+
+// Memberships
+export async function getActiveMembership(orgId: string): Promise<Membership | null> {
+  try {
+    if (!supabase) return null;
+    const today = new Date().toISOString().split('T')[0];
+    const { data } = await supabase
+      .from('memberships')
+      .select('*')
+      .eq('org_id', orgId)
+      .eq('status', 'paid')
+      .gte('period_end', today)
+      .order('period_end', { ascending: false })
+      .limit(1)
+      .single();
+    return data || null;
+  } catch {
+    return null;
+  }
+}
+
+// Registrations
+export async function getRegistrationCount(eventId: string): Promise<number> {
+  try {
+    if (!supabase) return 0;
+    const { count } = await supabase
+      .from('registrations')
+      .select('*', { count: 'exact', head: true })
+      .eq('event_id', eventId)
+      .eq('payment_status', 'paid');
+    return count || 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function getRegistrationsByUser(userId: string): Promise<Registration[]> {
+  try {
+    if (!supabase) return [];
+    const { data } = await supabase
+      .from('registrations')
+      .select('*, events(*)')
+      .eq('user_id', userId)
+      .eq('payment_status', 'paid')
+      .order('created_at', { ascending: false });
+    return data || [];
+  } catch {
+    return [];
+  }
+}
+
+// PD Credits
+export async function getUserPDCredits(userId: string): Promise<number> {
+  try {
+    if (!supabase) return 0;
+    const { data } = await supabase
+      .from('pd_credits')
+      .select('credits')
+      .eq('user_id', userId);
+    const total = data?.reduce((sum, row: any) => sum + parseFloat(row.credits.toString()), 0) || 0;
+    return parseFloat(total.toFixed(2));
+  } catch {
+    return 0;
+  }
+}
+
+export async function getPDCreditsHistory(userId: string): Promise<(PDCredit & { event?: Event })[]> {
+  try {
+    if (!supabase) return [];
+    const { data } = await supabase
+      .from('pd_credits')
+      .select('*, events(*)')
+      .eq('user_id', userId)
+      .order('recorded_at', { ascending: false });
     return data || [];
   } catch {
     return [];

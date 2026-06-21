@@ -170,13 +170,19 @@ async function EventDetailPage({
                   </div>
                 ) : null}
 
-                <button className="w-full bg-forest hover:bg-forest-dark text-white font-bold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-                  disabled={isPast || event.status === 'full'}
+                <Link
+                  href={`/events/${params.id}/register`}
+                  className="block w-full bg-forest hover:bg-forest-dark text-white font-bold py-3 px-4 rounded-lg transition text-center disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+                  onClick={(e) => {
+                    if (isPast || event.status === 'full') {
+                      e.preventDefault();
+                    }
+                  }}
                 >
                   {isPast ? 'Event Passed' : event.status === 'full' ? 'Join Waitlist' : 'Register Now'}
-                </button>
+                </Link>
 
-                {!isPast && (
+                {!isPast && event.status !== 'full' && (
                   <p className="text-xs text-gray-600 text-center">
                     Click to proceed to registration and payment via Stripe.
                   </p>
