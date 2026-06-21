@@ -647,7 +647,7 @@ async function seed() {
 
     // 8. Insert registrations for some employees
     console.log('Inserting registrations...');
-    const registrationRows = [];
+    const registrationRows: any[] = [];
     const eventList = insertedEvents || [];
     const employeeList = employees || [];
 
@@ -764,7 +764,7 @@ async function seed() {
 
     // 11. Insert sponsorship opportunities
     console.log('Inserting sponsorships...');
-    const sponsorshipRows = [];
+    const sponsorshipRows: any[] = [];
     const sponsorshipTiers = ['platinum', 'gold', 'silver', 'bronze'] as const;
 
     // Sponsorships for the gala and golf tournament

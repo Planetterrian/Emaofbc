@@ -19,7 +19,7 @@ export async function sendEmail(
       to,
       subject,
       html,
-      reply_to: options?.replyTo,
+      replyTo: options?.replyTo,
       cc: options?.cc,
       bcc: options?.bcc,
     });
