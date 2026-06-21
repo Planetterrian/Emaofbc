@@ -1,12 +1,66 @@
-import Link from 'next/link';
-import type { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Member Portal | EMA of BC',
-  description: 'EMA of BC member portal for organizations and employees.',
-};
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
 
 export default function PortalPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+        );
+
+        const {
+          data: { user: authUser },
+        } = await supabase.auth.getUser();
+
+        if (!authUser) {
+          router.push('/auth/login');
+          return;
+        }
+
+        setUser(authUser);
+
+        // Fetch user profile
+        const { data: profile } = await supabase
+          .from('users')
+          .select('*, organizations(*)')
+          .eq('id', authUser.id)
+          .single();
+
+        setUserProfile(profile);
+      } catch (error) {
+        console.error('Auth check failed:', error);
+        router.push('/auth/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <main>
       {/* Header */}
@@ -14,14 +68,23 @@ export default function PortalPage() {
         <div className="container mx-auto px-4 flex items-center justify-between">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold mb-2">Member Portal</h1>
-            <p className="text-xl text-gray-200">Manage your organization and membership</p>
+            <p className="text-xl text-gray-200">
+              Welcome, {userProfile?.full_name || user.email}
+            </p>
           </div>
-          <Link
-            href="/join"
-            className="bg-forest hover:bg-forest-dark text-white px-6 py-3 rounded-lg font-semibold transition hidden md:inline-block"
+          <button
+            onClick={async () => {
+              const supabase = createClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+              );
+              await supabase.auth.signOut();
+              router.push('/');
+            }}
+            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition"
           >
-            Renew →
-          </Link>
+            Log Out
+          </button>
         </div>
       </section>
 
@@ -32,62 +95,61 @@ export default function PortalPage() {
             {/* Dashboard Cards */}
             <div className="md:col-span-3 grid md:grid-cols-3 gap-6">
               <div className="bg-white border-2 border-forest rounded-lg p-6">
-                <div className="text-4xl font-bold text-forest mb-2">—</div>
-                <div className="text-sm font-semibold text-gray-600 uppercase">Status</div>
-                <p className="text-navy font-semibold mt-1">Member Portal</p>
-                <p className="text-xs text-gray-600 mt-2">Coming in Phase 2</p>
+                <div className="text-4xl font-bold text-forest mb-2">👤</div>
+                <div className="text-sm font-semibold text-gray-600 uppercase">Your Profile</div>
+                <p className="text-navy font-semibold mt-1">{user.email}</p>
+                <p className="text-xs text-gray-600 mt-2">
+                  {userProfile?.role === 'org_admin' ? 'Organization Admin' : 'Member'}
+                </p>
               </div>
 
               <div className="bg-white border-2 border-forest rounded-lg p-6">
-                <div className="text-4xl font-bold text-forest mb-2">—</div>
-                <div className="text-sm font-semibold text-gray-600 uppercase">Membership</div>
-                <p className="text-navy font-semibold mt-1">Organization Management</p>
-                <p className="text-xs text-gray-600 mt-2">Profile, billing, team</p>
+                <div className="text-4xl font-bold text-forest mb-2">🏢</div>
+                <div className="text-sm font-semibold text-gray-600 uppercase">Organization</div>
+                <p className="text-navy font-semibold mt-1">
+                  {userProfile?.organizations?.name || 'Not assigned'}
+                </p>
+                <p className="text-xs text-gray-600 mt-2">
+                  {userProfile?.organizations?.type || '—'}
+                </p>
               </div>
 
               <div className="bg-white border-2 border-forest rounded-lg p-6">
-                <div className="text-4xl font-bold text-forest mb-2">—</div>
-                <div className="text-sm font-semibold text-gray-600 uppercase">Events</div>
-                <p className="text-navy font-semibold mt-1">Registrations & PD</p>
-                <p className="text-xs text-gray-600 mt-2">View credits & history</p>
+                <div className="text-4xl font-bold text-forest mb-2">📊</div>
+                <div className="text-sm font-semibold text-gray-600 uppercase">PD Credits</div>
+                <p className="text-navy font-semibold mt-1">Track Learning</p>
+                <p className="text-xs text-gray-600 mt-2">View your professional development</p>
               </div>
             </div>
 
             {/* Info Box */}
             <div className="md:col-span-3 bg-blue-50 border-2 border-blue-200 rounded-lg p-8">
-              <h2 className="text-2xl font-bold text-navy mb-4">Member Portal Coming Soon</h2>
+              <h2 className="text-2xl font-bold text-navy mb-4">Welcome to Your Portal</h2>
               <p className="text-gray-700 mb-4">
-                We're building a comprehensive member portal where you can:
+                You now have access to all member features:
               </p>
               <ul className="space-y-2 text-gray-700 mb-6">
                 <li className="flex gap-3">
                   <span className="text-blue-600 font-bold">✓</span>
-                  <span>Manage your organization's membership and billing</span>
+                  <span>View and manage your member profile</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-blue-600 font-bold">✓</span>
-                  <span>Update your profile and directory listing</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span>Invite and manage employees</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span>Register employees for events</span>
+                  <span>Register for events at member pricing</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-blue-600 font-bold">✓</span>
                   <span>Track professional development credits</span>
                 </li>
+                <li className="flex gap-3">
+                  <span className="text-blue-600 font-bold">✓</span>
+                  <span>Browse the member directory</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-blue-600 font-bold">✓</span>
+                  <span>Ask questions in the member assistant</span>
+                </li>
               </ul>
-              <p className="text-gray-700">
-                In the meantime, please contact{' '}
-                <a href="mailto:membership@emaofbc.com" className="text-forest hover:text-forest-dark font-semibold">
-                  membership@emaofbc.com
-                </a>{' '}
-                for assistance.
-              </p>
             </div>
           </div>
         </div>
@@ -126,21 +188,12 @@ export default function PortalPage() {
             </Link>
 
             <Link
-              href="/about"
+              href="/member-assistant"
               className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
             >
-              <div className="text-2xl mb-2">ℹ️</div>
-              <h3 className="font-bold text-navy">Member Benefits</h3>
-              <p className="text-sm text-gray-600 mt-1">Learn what's included in your membership</p>
-            </Link>
-
-            <Link
-              href="/contact"
-              className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
-            >
-              <div className="text-2xl mb-2">📧</div>
-              <h3 className="font-bold text-navy">Contact Us</h3>
-              <p className="text-sm text-gray-600 mt-1">Reach out with questions</p>
+              <div className="text-2xl mb-2">🤖</div>
+              <h3 className="font-bold text-navy">Member Assistant</h3>
+              <p className="text-sm text-gray-600 mt-1">Ask questions about EMA</p>
             </Link>
           </div>
         </div>
