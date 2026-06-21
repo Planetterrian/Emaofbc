@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { getPublishedEvents } from '@/lib/db';
 import { formatDate } from 'date-fns';

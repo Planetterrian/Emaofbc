@@ -4,6 +4,8 @@ import {
   getPublishedContent,
 } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export default async function BoardAnalyticsPage() {
   const [orgs, events, content] = await Promise.all([
     getActiveOrganizations(),

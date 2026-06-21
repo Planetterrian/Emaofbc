@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { getActiveOrganizations, getPublishedEvents } from '@/lib/db';
 

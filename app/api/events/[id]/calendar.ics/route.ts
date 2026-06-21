@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getEventById } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 function generateICS(event: any): string {
   const startDate = new Date(event.starts_at);
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour duration

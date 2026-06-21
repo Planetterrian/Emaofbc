@@ -13,8 +13,20 @@ import type {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-const supabase = (supabaseUrl && supabaseAnonKey)
-  ? createClient(supabaseUrl, supabaseAnonKey)
+function isValidSupabaseUrl(url?: string): boolean {
+  if (!url) return false;
+  if (url.includes('[') || url.includes(']')) return false;
+  if (!url.startsWith('https://')) return false;
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+const supabase = isValidSupabaseUrl(supabaseUrl) && supabaseAnonKey
+  ? createClient(supabaseUrl as string, supabaseAnonKey)
   : null;
 
 // Organizations
