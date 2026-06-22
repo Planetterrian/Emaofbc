@@ -51,36 +51,37 @@
   --shadow-glow: 0 16px 50px rgba(31, 107, 72, 0.22);
 }
 
-/* ---------- Base ---------- */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ---------- Base ----------
+   IMPORTANT: base styles live inside @layer base so that Tailwind's
+   utility classes (px-*, mx-*, p-*, m-*) always win. Do NOT add an
+   unlayered `* { margin:0; padding:0 }` reset — unlayered CSS overrides
+   every layer in Tailwind v4 and silently cancels spacing utilities.
+   Preflight already resets margins and sets box-sizing: border-box.   */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: var(--color-forest-light);
+    color: #fff;
+  }
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: var(--font-sans);
-  background-color: var(--color-canvas);
-  color: var(--color-ink);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-h1, h2, h3, h4, h5 {
-  font-family: var(--font-display);
-  letter-spacing: -0.02em;
-}
-
-::selection {
-  background: var(--color-forest-light);
-  color: #fff;
-}
-
-/* Subtle scrollbar */
+/* Subtle scrollbar (unlayered is fine — no utility conflict) */
 ::-webkit-scrollbar { width: 12px; height: 12px; }
 ::-webkit-scrollbar-thumb { background: #cbd5cd; border-radius: 999px; border: 3px solid var(--color-canvas); }
 ::-webkit-scrollbar-thumb:hover { background: var(--color-sage); }
