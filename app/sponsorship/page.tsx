@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -5,235 +6,115 @@ export const metadata: Metadata = {
   description: 'Event sponsorship opportunities with the Environmental Managers Association of BC.',
 };
 
+const BENEFITS = [
+  { icon: '🎯', title: 'Targeted Visibility', body: 'Reach environmental managers and decision-makers directly, at events relevant to your audience.' },
+  { icon: '🤝', title: 'Relationship Building', body: 'Strengthen relationships with clients, partners, and colleagues in a professional setting.' },
+  { icon: '📢', title: 'Brand Recognition', body: 'Build awareness within the BC environmental community through event materials and signage.' },
+  { icon: '📊', title: 'Industry Leadership', body: 'Position your organization as a leader in environmental excellence and sustainability.' },
+];
+
+const TIERS = [
+  { name: 'Platinum', price: '$5,000', accent: 'bg-navy', perks: ['Logo on event materials & website', '10 complimentary registrations', 'Speaking opportunity (2–3 min)', 'Premium booth placement', 'Event program recognition'], featured: true },
+  { name: 'Gold', price: '$3,000', accent: 'bg-gold', perks: ['Logo on event materials', '6 complimentary registrations', 'Booth placement', 'Event program listing'] },
+  { name: 'Silver', price: '$1,500', accent: 'bg-sage', perks: ['Logo on event website', '4 complimentary registrations', 'Booth space'] },
+  { name: 'Bronze', price: '$500', accent: 'bg-moss', perks: ['Company name on materials', '2 complimentary registrations'] },
+];
+
+const EVENTS = [
+  { title: 'Annual Golf Tournament', body: 'Network with environmental professionals on the course. Sponsorship includes team placement and signage.', meta: 'August · 144 attendees' },
+  { title: 'Awards Gala & AGM', body: 'Celebrate excellence in environmental management — our flagship annual event and premium sponsorship opportunity.', meta: 'June · 300+ attendees' },
+];
+
 export default function SponsorshipPage() {
   return (
-    <main>
-      {/* Hero */}
-      <section className="bg-navy text-white py-12 md:py-16">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Event Sponsorship</h1>
-          <p className="text-xl text-gray-200">
-            Showcase your organization to environmental professionals across BC
+    <>
+      <section className="bg-forest-gradient text-white">
+        <div className="container-px py-16 md:py-24">
+          <span className="eyebrow text-sage-light">Partner with us</span>
+          <h1 className="mt-4 text-4xl font-extrabold leading-tight md:text-5xl">Event sponsorship</h1>
+          <p className="mt-5 max-w-2xl text-lg text-white/80">
+            Showcase your organization to environmental professionals and decision-makers across BC.
           </p>
         </div>
       </section>
 
-      {/* Benefits */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-navy mb-12 text-center">Sponsorship Benefits</h2>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-            <div className="flex gap-4">
-              <div className="text-3xl">🎯</div>
-              <div>
-                <h3 className="text-lg font-bold text-navy mb-2">Targeted Visibility</h3>
-                <p className="text-gray-600">
-                  Reach environmental managers and decision-makers directly. Your brand reaches the
-                  right audience at relevant events.
-                </p>
+      <section className="section">
+        <div className="container-px">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="eyebrow">Why sponsor</span>
+            <h2 className="mt-3 text-3xl font-bold text-navy md:text-4xl">Sponsorship benefits</h2>
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {BENEFITS.map((b) => (
+              <div key={b.title} className="card flex gap-4">
+                <div className="text-3xl">{b.icon}</div>
+                <div>
+                  <h3 className="text-lg font-bold text-navy">{b.title}</h3>
+                  <p className="mt-1 text-ink-soft">{b.body}</p>
+                </div>
               </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="text-3xl">🤝</div>
-              <div>
-                <h3 className="text-lg font-bold text-navy mb-2">Relationship Building</h3>
-                <p className="text-gray-600">
-                  Strengthen relationships with clients, partners, and industry colleagues in an
-                  engaging, professional setting.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="text-3xl">📢</div>
-              <div>
-                <h3 className="text-lg font-bold text-navy mb-2">Brand Recognition</h3>
-                <p className="text-gray-600">
-                  Increase brand awareness within the BC environmental management community. Recognition
-                  on event materials and signage.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="text-3xl">📊</div>
-              <div>
-                <h3 className="text-lg font-bold text-navy mb-2">Industry Leadership</h3>
-                <p className="text-gray-600">
-                  Position your organization as a leader in environmental excellence and sustainability
-                  in BC.
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Sponsorship Tiers */}
-      <section className="bg-gray-50 py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-navy mb-12 text-center">Sponsorship Tiers</h2>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {/* Platinum */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition border-t-4 border-blue-600">
-              <div className="bg-blue-600 text-white p-6">
-                <h3 className="text-2xl font-bold">Platinum</h3>
-                <div className="text-3xl font-bold mt-2">$5,000</div>
-              </div>
-
-              <div className="p-6">
-                <ul className="space-y-3 text-sm text-gray-700">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 font-bold">✓</span>
-                    <span>Logo on event materials & website</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 font-bold">✓</span>
-                    <span>10 complimentary registrations</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 font-bold">✓</span>
-                    <span>Speaking opportunity (2-3 min)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 font-bold">✓</span>
-                    <span>Premium booth placement</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 font-bold">✓</span>
-                    <span>Event program recognition</span>
-                  </li>
+      <section className="section bg-mesh pt-0">
+        <div className="container-px">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="eyebrow">Packages</span>
+            <h2 className="mt-3 text-3xl font-bold text-navy md:text-4xl">Sponsorship tiers</h2>
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {TIERS.map((t) => (
+              <div key={t.name} className={`card card-hover flex flex-col overflow-hidden p-0 ${t.featured ? 'ring-2 ring-forest' : ''}`}>
+                <div className={`${t.accent} px-6 py-6 text-white`}>
+                  <h3 className="text-2xl font-bold">{t.name}</h3>
+                  <div className="mt-1 text-3xl font-bold">{t.price}</div>
+                </div>
+                <ul className="flex-1 space-y-3 p-6 text-sm text-ink-soft">
+                  {t.perks.map((p) => (
+                    <li key={p} className="flex items-start gap-2">
+                      <span className="mt-0.5 font-bold text-forest">✓</span>
+                      <span>{p}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
-            </div>
-
-            {/* Gold */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition border-t-4 border-yellow-500">
-              <div className="bg-yellow-500 text-white p-6">
-                <h3 className="text-2xl font-bold">Gold</h3>
-                <div className="text-3xl font-bold mt-2">$3,000</div>
-              </div>
-
-              <div className="p-6">
-                <ul className="space-y-3 text-sm text-gray-700">
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-500 font-bold">✓</span>
-                    <span>Logo on event materials</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-500 font-bold">✓</span>
-                    <span>6 complimentary registrations</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-500 font-bold">✓</span>
-                    <span>Booth placement</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-yellow-500 font-bold">✓</span>
-                    <span>Event program listing</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Silver */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition border-t-4 border-gray-400">
-              <div className="bg-gray-400 text-white p-6">
-                <h3 className="text-2xl font-bold">Silver</h3>
-                <div className="text-3xl font-bold mt-2">$1,500</div>
-              </div>
-
-              <div className="p-6">
-                <ul className="space-y-3 text-sm text-gray-700">
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-400 font-bold">✓</span>
-                    <span>Logo on event website</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-400 font-bold">✓</span>
-                    <span>4 complimentary registrations</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-gray-400 font-bold">✓</span>
-                    <span>Booth space</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Bronze */}
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition border-t-4 border-amber-700">
-              <div className="bg-amber-700 text-white p-6">
-                <h3 className="text-2xl font-bold">Bronze</h3>
-                <div className="text-3xl font-bold mt-2">$500</div>
-              </div>
-
-              <div className="p-6">
-                <ul className="space-y-3 text-sm text-gray-700">
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-700 font-bold">✓</span>
-                    <span>Company name on materials</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-amber-700 font-bold">✓</span>
-                    <span>2 complimentary registrations</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Events */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-navy mb-12 text-center">Sponsorable Events</h2>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <div className="bg-white border-2 border-forest rounded-lg p-8">
-              <h3 className="text-2xl font-bold text-navy mb-3">Annual Golf Tournament</h3>
-              <p className="text-gray-600 mb-4">
-                Network with environmental professionals on the course. Over 100 attendees, sponsorship
-                includes team placement and signage.
-              </p>
-              <div className="text-sm text-gray-600">September | 144 attendees</div>
-            </div>
-
-            <div className="bg-white border-2 border-forest rounded-lg p-8">
-              <h3 className="text-2xl font-bold text-navy mb-3">Awards Gala & AGM</h3>
-              <p className="text-gray-600 mb-4">
-                Celebrate excellence in environmental management. Premium sponsorship opportunity at our
-                flagship annual event.
-              </p>
-              <div className="text-sm text-gray-600">November | 300+ attendees</div>
-            </div>
+      <section className="section">
+        <div className="container-px">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="eyebrow">Opportunities</span>
+            <h2 className="mt-3 text-3xl font-bold text-navy md:text-4xl">Sponsorable events</h2>
           </div>
-
-          <p className="text-center text-gray-600 mt-12">
-            Custom sponsorship packages available for monthly sessions and workshops. Contact us to discuss.
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {EVENTS.map((e) => (
+              <div key={e.title} className="card card-hover border-l-4 border-forest">
+                <h3 className="text-2xl font-bold text-navy">{e.title}</h3>
+                <p className="mt-3 text-ink-soft">{e.body}</p>
+                <div className="mt-4 text-sm font-semibold text-forest">{e.meta}</div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-10 text-center text-ink-soft">
+            Custom packages available for monthly sessions and workshops — contact us to discuss.
           </p>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-navy text-white py-16 md:py-24">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">Become a Sponsor</h2>
-          <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
-            Interested in sponsoring an EMA event? Contact us to discuss your sponsorship options.
-          </p>
-          <a
-            href="mailto:sponsorship@emaofbc.com"
-            className="inline-block bg-forest hover:bg-forest-dark text-white px-8 py-3 rounded-lg font-semibold text-lg transition"
-          >
-            Get Sponsorship Information
-          </a>
+      <section className="section pt-0">
+        <div className="container-px">
+          <div className="rounded-[2rem] bg-forest-gradient px-8 py-14 text-center text-white md:px-16">
+            <h2 className="text-3xl font-bold md:text-4xl">Become a sponsor</h2>
+            <p className="mx-auto mt-3 max-w-xl text-white/80">Interested in sponsoring an EMA event? Let’s talk options.</p>
+            <a href="mailto:sponsorship@emaofbc.com" className="btn btn-lg btn-light mt-6">Get sponsorship information</a>
+          </div>
         </div>
       </section>
-    </main>
+    </>
   );
 }

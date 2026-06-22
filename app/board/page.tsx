@@ -6,140 +6,98 @@ export const metadata: Metadata = {
   description: 'Meet the leaders and members of the EMA of BC Board of Directors.',
 };
 
+export const dynamic = 'force-dynamic';
+
+const ROLE_ORDER = ['President', 'Vice President', 'Treasurer', 'Secretary', 'Director-at-Large', 'Past President'];
+
+const RESPONSIBILITIES = [
+  { title: 'Strategic Direction', body: 'Setting the association’s vision, mission, and long-term goals to advance environmental excellence.' },
+  { title: 'Program Oversight', body: 'Ensuring quality professional development programming, events, and member services.' },
+  { title: 'Governance', body: 'Maintaining financial health, compliance, and organizational policies that serve members.' },
+];
+
 async function BoardPage() {
-  const boardMembers = await getBoardMembers();
-
-  // Group by role
-  const groupedByRole = boardMembers.reduce(
-    (acc, member) => {
-      const role = member.role || 'Member';
-      if (!acc[role]) acc[role] = [];
-      acc[role].push(member);
-      return acc;
-    },
-    {} as Record<string, typeof boardMembers>
-  );
-
-  const roleOrder = ['President', 'Vice President', 'Treasurer', 'Secretary', 'Director-at-Large', 'Past President'];
+  const boardMembers = await getBoardMembers().catch(() => []);
+  const grouped = boardMembers.reduce((acc: Record<string, any[]>, m: any) => {
+    const role = m.role || 'Member';
+    (acc[role] ||= []).push(m);
+    return acc;
+  }, {} as Record<string, any[]>);
 
   return (
-    <main>
-      {/* Header */}
-      <section className="bg-navy text-white py-12 md:py-16">
-        <div className="container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Board of Directors</h1>
-          <p className="text-xl text-gray-200">
-            Volunteer leaders driving EMA's mission to advance environmental excellence
+    <>
+      <section className="bg-forest-gradient text-white">
+        <div className="container-px py-16 md:py-24">
+          <span className="eyebrow text-sage-light">Leadership</span>
+          <h1 className="mt-4 text-4xl font-extrabold leading-tight md:text-5xl">Board of Directors</h1>
+          <p className="mt-5 max-w-2xl text-lg text-white/80">
+            Volunteer leaders driving EMA’s mission to advance environmental excellence across BC.
           </p>
         </div>
       </section>
 
-      {/* About Board */}
-      <section className="bg-gray-50 py-12 md:py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl">
-            <h2 className="text-3xl font-bold text-navy mb-6">Our Leadership</h2>
-            <p className="text-lg text-gray-700 mb-4">
-              The EMA of BC Board of Directors is composed of experienced environmental professionals
-              representing diverse sectors including corporate, government, consulting, and non-profit
-              organizations.
-            </p>
-            <p className="text-lg text-gray-700">
-              Our board members are dedicated to advancing the association's mission of promoting
-              environmental excellence, professional development, and industry collaboration across
-              British Columbia.
+      <section className="section">
+        <div className="container-px">
+          <div className="card max-w-3xl">
+            <h2 className="text-2xl font-bold text-navy">Our leadership</h2>
+            <p className="mt-4 text-ink-soft">
+              The Board is composed of experienced environmental professionals representing corporate,
+              government, consulting, and non-profit organizations — all dedicated to promoting
+              environmental excellence, professional development, and collaboration across BC.
             </p>
           </div>
-        </div>
-      </section>
 
-      {/* Board Members */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          {roleOrder.map((role) => {
-            const members = groupedByRole[role];
-            if (!members) return null;
-
-            return (
-              <div key={role} className="mb-16">
-                <h2 className="text-2xl font-bold text-navy mb-8 flex items-center gap-3">
-                  <span className="w-1 h-8 bg-forest rounded-full"></span>
-                  {role}
-                </h2>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {members.map((member) => (
-                    <div key={member.id} className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition">
-                      <div className="mb-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-navy to-forest rounded-full flex items-center justify-center text-white font-bold text-xl mb-4">
-                          {member.full_name
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .toUpperCase()}
+          {boardMembers.length === 0 ? (
+            <div className="mt-12 rounded-3xl border border-dashed border-forest/20 bg-forest-50/40 p-14 text-center">
+              <div className="text-4xl">🌿</div>
+              <p className="mt-3 text-lg font-semibold text-navy">Board members will be listed here soon.</p>
+            </div>
+          ) : (
+            ROLE_ORDER.map((role) =>
+              grouped[role] ? (
+                <div key={role} className="mt-14">
+                  <h2 className="flex items-center gap-3 text-2xl font-bold text-navy">
+                    <span className="h-7 w-1.5 rounded-full bg-forest" />
+                    {role}
+                  </h2>
+                  <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {grouped[role].map((m: any) => (
+                      <div key={m.id} className="card card-hover">
+                        <div className="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-navy to-forest text-xl font-bold text-white">
+                          {m.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </div>
+                        <h3 className="mt-4 text-xl font-bold text-navy">{m.full_name}</h3>
+                        <p className="font-semibold text-forest">{role}</p>
+                        <div className="mt-4 border-t border-black/[0.06] pt-4">
+                          <a href={`mailto:${m.email}`} className="link-arrow">Contact →</a>
                         </div>
                       </div>
-
-                      <h3 className="text-xl font-bold text-navy mb-1">{member.full_name}</h3>
-                      <p className="text-forest font-semibold mb-4">{role}</p>
-
-                      {member.org_id && (
-                        <p className="text-gray-600 text-sm">
-                          Organization: <span className="font-semibold">{member.org_id}</span>
-                        </p>
-                      )}
-
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <p className="text-sm text-gray-600">
-                          <a
-                            href={`mailto:${member.email}`}
-                            className="text-forest hover:text-forest-dark font-semibold"
-                          >
-                            Contact
-                          </a>
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              ) : null
+            )
+          )}
         </div>
       </section>
 
-      {/* Board Responsibilities */}
-      <section className="bg-gray-50 py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold text-navy mb-12 text-center">Board Responsibilities</h2>
-
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="bg-white p-8 rounded-lg">
-              <h3 className="text-lg font-bold text-navy mb-3">Strategic Direction</h3>
-              <p className="text-gray-600">
-                Setting the association's vision, mission, and long-term strategic goals to advance
-                environmental excellence.
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-lg">
-              <h3 className="text-lg font-bold text-navy mb-3">Program Oversight</h3>
-              <p className="text-gray-600">
-                Ensuring quality professional development programming, events, and member services.
-              </p>
-            </div>
-
-            <div className="bg-white p-8 rounded-lg">
-              <h3 className="text-lg font-bold text-navy mb-3">Governance</h3>
-              <p className="text-gray-600">
-                Maintaining financial health, compliance, and organizational policies that serve our
-                members.
-              </p>
-            </div>
+      <section className="section bg-mesh pt-0">
+        <div className="container-px">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="eyebrow">Governance</span>
+            <h2 className="mt-3 text-3xl font-bold text-navy md:text-4xl">Board responsibilities</h2>
+          </div>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {RESPONSIBILITIES.map((r) => (
+              <div key={r.title} className="card">
+                <h3 className="text-lg font-bold text-navy">{r.title}</h3>
+                <p className="mt-2 text-ink-soft">{r.body}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
-    </main>
+    </>
   );
 }
 
