@@ -1,0 +1,31 @@
+name: Send Notifications
+
+# Fallback scheduler for notification emails.
+# Vercel Cron (see vercel.json -> /api/cron) is the primary mechanism.
+# Use this workflow only if you are NOT using Vercel Cron, to avoid
+# sending duplicate emails. Set the NOTIFICATION_API_KEY and SITE_URL
+# repository secrets before enabling.
+
+on:
+  schedule:
+    - cron: '0 9 * * *' # 09:00 UTC daily
+  workflow_dispatch: {} # allow manual runs from the Actions tab
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Membership Renewal Reminders
+        run: |
+          curl -fsS -X POST "${{ secrets.SITE_URL }}/api/notifications/membership-renewals" \
+            -H "x-api-key: ${{ secrets.NOTIFICATION_API_KEY }}"
+
+      - name: Event Reminders
+        run: |
+          curl -fsS -X POST "${{ secrets.SITE_URL }}/api/notifications/event-reminders" \
+            -H "x-api-key: ${{ secrets.NOTIFICATION_API_KEY }}"
+
+      - name: PD Credit Notifications
+        run: |
+          curl -fsS -X POST "${{ secrets.SITE_URL }}/api/notifications/pd-credits" \
+            -H "x-api-key: ${{ secrets.NOTIFICATION_API_KEY }}"
