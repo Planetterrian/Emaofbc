@@ -1,17 +1,31 @@
 import type { Metadata } from 'next';
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { generateOrganizationSchema } from '@/lib/schema';
 
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: ['500', '600', '700', '800'],
+  variable: '--font-jakarta',
+  display: 'swap',
+});
+
 export const metadata: Metadata = {
   title: 'Environmental Managers Association of BC',
   description:
-    'Professional network for environmental managers in British Columbia. Advancing environmental due diligence and excellence.',
+    'The premier professional network for environmental managers in British Columbia — advancing environmental due diligence, education, and excellence.',
   openGraph: {
     title: 'Environmental Managers Association of BC',
     description:
-      'Professional network for environmental managers in British Columbia. Advancing environmental due diligence and excellence.',
+      'The premier professional network for environmental managers in British Columbia — advancing environmental due diligence, education, and excellence.',
     type: 'website',
     url: process.env.NEXT_PUBLIC_SITE_URL,
   },
@@ -28,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${jakarta.variable}`}>
       <head>
         <script
           type="application/ld+json"
@@ -37,9 +51,9 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-white text-gray-900">
+      <body className="bg-canvas text-ink antialiased">
         <Header />
-        <div className="min-h-[calc(100vh-200px)]">{children}</div>
+        <main className="min-h-[calc(100vh-200px)]">{children}</main>
         <Footer />
       </body>
     </html>
