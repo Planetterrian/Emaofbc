@@ -21,8 +21,8 @@ async function HomePage() {
             Environmental Excellence in BC
           </h1>
           <p className="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto">
-            The Environmental Managers Association of BC is the premier professional network
-            advancing environmental due diligence and sustainability across British Columbia.
+            A non-profit association founded in the early 1990s to encourage education, share lessons
+            learned, and create a forum for environmental management issues across British Columbia.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

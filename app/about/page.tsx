@@ -27,25 +27,43 @@ export default function AboutPage() {
             <div>
               <h2 className="text-3xl font-bold text-navy mb-6">Our Mission</h2>
               <p className="text-lg text-gray-700 mb-4">
-                To advance environmental excellence and professional development among environmental
-                managers in British Columbia through networking, education, and industry collaboration.
+                The Environmental Managers Association of British Columbia's aim is to encourage
+                education, share lessons learned, and create a forum for environmental management
+                issues.
               </p>
               <p className="text-lg text-gray-700">
-                We provide a forum for environmental professionals to share knowledge, develop skills,
-                and establish best practices in environmental management.
+                We assist businesses conducting environmental work to effectively anticipate and
+                respond to environmental issues.
               </p>
             </div>
 
             <div>
               <h2 className="text-3xl font-bold text-navy mb-6">Our Vision</h2>
               <p className="text-lg text-gray-700 mb-4">
-                To be the premier professional association for environmental managers in British
-                Columbia, recognized for advancing environmental due diligence and sustainability.
+                To encourage education, share knowledge among members and create a forum for
+                environmental management issues.
               </p>
-              <p className="text-lg text-gray-700">
-                We envision a community where environmental professionals collaborate to drive continuous
-                improvement in environmental management practices across all sectors.
-              </p>
+            </div>
+          </div>
+
+          {/* Objectives */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-navy mb-8">Our Objectives</h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {[
+                'To provide a network for the generation and exchange of information and ideas among members',
+                'To serve as a key resource of environmental information for members',
+                'To explore existing and emerging environmental issues',
+                'To promote cooperation, communication and understanding among members',
+              ].map((objective, index) => (
+                <div
+                  key={index}
+                  className="bg-white border-l-4 border-forest p-6 rounded-lg shadow-sm flex gap-4"
+                >
+                  <span className="text-2xl font-bold text-forest">{index + 1}</span>
+                  <p className="text-gray-700">{objective}</p>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -61,8 +79,35 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* History */}
+      <section className="py-16 md:py-24 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl">
+            <h2 className="text-3xl font-bold text-navy mb-6">Our History</h2>
+            <p className="text-lg text-gray-700 mb-4">
+              The Environmental Managers Association of BC is a non-profit organization founded in the
+              early 1990s, when environmental professionals sought to share their environmental
+              management experiences and learn from one another.
+            </p>
+            <p className="text-lg text-gray-700 mb-4">
+              Originally called "iciEMA," the association was created by a group of environmental
+              managers performing environmental work in the industrial, commercial, and institutional
+              sectors. As operations expanded, membership criteria opened up to include a broader range
+              of environmental companies and others conducting environmental work — including
+              environmental consulting firms, laboratories, law firms, and other service providers.
+            </p>
+            <p className="text-lg text-gray-700">
+              With this expansion, the number of member companies immediately doubled, prompting the
+              name change to the Environmental Managers Association (EMA) of BC. Today the organization
+              is governed by the EMA of BC Purposes &amp; Bylaws, and its Board of Directors is elected
+              by the membership at the annual general meeting.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* What We Do */}
-      <section className="bg-gray-50 py-16 md:py-24">
+      <section className="py-16 md:py-24">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-navy mb-12 text-center">What We Do</h2>
 

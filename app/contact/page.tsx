@@ -73,8 +73,8 @@ export default function ContactPage() {
 
                 <div>
                   <h3 className="text-lg font-bold text-navy mb-2">Phone</h3>
-                  <a href="tel:+16045551234" className="text-forest hover:text-forest-dark font-semibold text-lg">
-                    (604) 555-1234
+                  <a href="tel:+16049982226" className="text-forest hover:text-forest-dark font-semibold text-lg">
+                    604-998-2226
                   </a>
                   <p className="text-gray-600 mt-1">Monday–Friday, 9 AM–5 PM PT</p>
                 </div>
@@ -84,9 +84,9 @@ export default function ContactPage() {
                   <p className="text-gray-700">
                     Environmental Managers Association of BC
                     <br />
-                    Suite 100, 1234 West Pender Street
+                    P.O. Box 3741
                     <br />
-                    Vancouver, BC V6E 4R4
+                    Vancouver, BC V6B 3Z1
                     <br />
                     Canada
                   </p>
@@ -143,10 +143,21 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Map placeholder */}
-      <section className="h-96 bg-gray-200">
-        <div className="w-full h-full flex items-center justify-center">
-          <p className="text-gray-600">Map placeholder</p>
+      {/* Connect */}
+      <section className="bg-gray-50 py-12">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl font-bold text-navy mb-3">Stay Connected</h2>
+          <p className="text-gray-600 mb-6">
+            Follow EMA of BC on LinkedIn for the latest news, events, and member updates.
+          </p>
+          <a
+            href="https://www.linkedin.com/company/ema-of-bc/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-navy hover:bg-navy-dark text-white px-8 py-3 rounded-lg font-semibold transition"
+          >
+            EMA of BC on LinkedIn →
+          </a>
         </div>
       </section>
     </main>
