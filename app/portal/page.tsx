@@ -5,6 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
+const QUICK_LINKS = [
+  { href: '/portal/pd-credits', icon: '📊', title: 'PD Credits', desc: 'Track your professional development' },
+  { href: '/events', icon: '📅', title: 'Browse Events', desc: 'View and register for upcoming events' },
+  { href: '/directory', icon: '👥', title: 'Member Directory', desc: 'Connect with other members' },
+  { href: '/member-assistant', icon: '✨', title: 'AI Assistant', desc: 'Ask questions about EMA' },
+  { href: '/portal/notifications', icon: '🔔', title: 'Notifications', desc: 'Manage email preferences' },
+];
+
 export default function PortalPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -18,25 +26,17 @@ export default function PortalPage() {
           process.env.NEXT_PUBLIC_SUPABASE_URL || '',
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
         );
-
-        const {
-          data: { user: authUser },
-        } = await supabase.auth.getUser();
-
+        const { data: { user: authUser } } = await supabase.auth.getUser();
         if (!authUser) {
           router.push('/auth/login');
           return;
         }
-
         setUser(authUser);
-
-        // Fetch user profile
         const { data: profile } = await supabase
           .from('users')
           .select('*, organizations(*)')
           .eq('id', authUser.id)
           .single();
-
         setUserProfile(profile);
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -45,179 +45,87 @@ export default function PortalPage() {
         setLoading(false);
       }
     };
-
     checkAuth();
   }, [router]);
 
+  async function signOut() {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+    );
+    await supabase.auth.signOut();
+    router.push('/');
+  }
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <p className="text-ink-soft">Loading your portal…</p>
       </div>
     );
   }
+  if (!user) return null;
 
-  if (!user) {
-    return null;
-  }
+  const isAdmin = userProfile?.role === 'org_admin';
 
   return (
-    <main>
-      {/* Header */}
-      <section className="bg-navy text-white py-12 md:py-16">
-        <div className="container mx-auto px-4 flex items-center justify-between">
+    <>
+      <section className="bg-forest-gradient text-white">
+        <div className="container-px flex flex-col gap-4 py-12 md:flex-row md:items-center md:justify-between md:py-16">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-2">Member Portal</h1>
-            <p className="text-xl text-gray-200">
+            <span className="eyebrow text-sage-light">Member Portal</span>
+            <h1 className="mt-3 text-3xl font-extrabold md:text-4xl">
               Welcome, {userProfile?.full_name || user.email}
-            </p>
+            </h1>
           </div>
-          <button
-            onClick={async () => {
-              const supabase = createClient(
-                process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-                process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-              );
-              await supabase.auth.signOut();
-              router.push('/');
-            }}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition"
-          >
+          <button onClick={signOut} className="btn btn-md border border-white/25 text-white hover:bg-white/10 self-start">
             Log Out
           </button>
         </div>
       </section>
 
-      {/* Content */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl">
-            {/* Dashboard Cards */}
-            <div className="md:col-span-3 grid md:grid-cols-3 gap-6">
-              <div className="bg-white border-2 border-forest rounded-lg p-6">
-                <div className="text-4xl font-bold text-forest mb-2">👤</div>
-                <div className="text-sm font-semibold text-gray-600 uppercase">Your Profile</div>
-                <p className="text-navy font-semibold mt-1">{user.email}</p>
-                <p className="text-xs text-gray-600 mt-2">
-                  {userProfile?.role === 'org_admin' ? 'Organization Admin' : 'Member'}
-                </p>
-              </div>
-
-              <div className="bg-white border-2 border-forest rounded-lg p-6">
-                <div className="text-4xl font-bold text-forest mb-2">🏢</div>
-                <div className="text-sm font-semibold text-gray-600 uppercase">Organization</div>
-                <p className="text-navy font-semibold mt-1">
-                  {userProfile?.organizations?.name || 'Not assigned'}
-                </p>
-                <p className="text-xs text-gray-600 mt-2">
-                  {userProfile?.organizations?.type || '—'}
-                </p>
-              </div>
-
-              <div className="bg-white border-2 border-forest rounded-lg p-6">
-                <div className="text-4xl font-bold text-forest mb-2">📊</div>
-                <div className="text-sm font-semibold text-gray-600 uppercase">PD Credits</div>
-                <p className="text-navy font-semibold mt-1">Track Learning</p>
-                <p className="text-xs text-gray-600 mt-2">View your professional development</p>
-              </div>
+      <section className="section">
+        <div className="container-px">
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="card">
+              <div className="text-3xl">👤</div>
+              <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Your profile</div>
+              <p className="mt-1 font-semibold text-navy">{user.email}</p>
+              <p className="mt-1 text-sm text-ink-soft">{isAdmin ? 'Organization Admin' : 'Member'}</p>
             </div>
-
-            {/* Info Box */}
-            <div className="md:col-span-3 bg-blue-50 border-2 border-blue-200 rounded-lg p-8">
-              <h2 className="text-2xl font-bold text-navy mb-4">Welcome to Your Portal</h2>
-              <p className="text-gray-700 mb-4">
-                You now have access to all member features:
-              </p>
-              <ul className="space-y-2 text-gray-700 mb-6">
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span>View and manage your member profile</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span>Register for events at member pricing</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span>Track professional development credits</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span>Browse the member directory</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-blue-600 font-bold">✓</span>
-                  <span>Ask questions in the member assistant</span>
-                </li>
-              </ul>
+            <div className="card">
+              <div className="text-3xl">🏢</div>
+              <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">Organization</div>
+              <p className="mt-1 font-semibold text-navy">{userProfile?.organizations?.name || 'Not assigned'}</p>
+              <p className="mt-1 text-sm text-ink-soft">{userProfile?.organizations?.type || '—'}</p>
+            </div>
+            <div className="card">
+              <div className="text-3xl">📊</div>
+              <div className="mt-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">PD credits</div>
+              <p className="mt-1 font-semibold text-navy">Track learning</p>
+              <Link href="/portal/pd-credits" className="link-arrow mt-1 text-sm">View credits →</Link>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Quick Links */}
-      <section className="bg-gray-50 py-12 md:py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-navy mb-8">Quick Links</h2>
-          <div className="grid md:grid-cols-4 gap-6">
-            <Link
-              href="/portal/pd-credits"
-              className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
-            >
-              <div className="text-2xl mb-2">📊</div>
-              <h3 className="font-bold text-navy">PD Credits</h3>
-              <p className="text-sm text-gray-600 mt-1">Track your professional development</p>
-            </Link>
-
-            <Link
-              href="/events"
-              className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
-            >
-              <div className="text-2xl mb-2">📅</div>
-              <h3 className="font-bold text-navy">Browse Events</h3>
-              <p className="text-sm text-gray-600 mt-1">View and register for upcoming events</p>
-            </Link>
-
-            <Link
-              href="/directory"
-              className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
-            >
-              <div className="text-2xl mb-2">👥</div>
-              <h3 className="font-bold text-navy">Member Directory</h3>
-              <p className="text-sm text-gray-600 mt-1">Connect with other members</p>
-            </Link>
-
-            <Link
-              href="/member-assistant"
-              className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
-            >
-              <div className="text-2xl mb-2">🤖</div>
-              <h3 className="font-bold text-navy">Member Assistant</h3>
-              <p className="text-sm text-gray-600 mt-1">Ask questions about EMA</p>
-            </Link>
-
-            <Link
-              href="/portal/notifications"
-              className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
-            >
-              <div className="text-2xl mb-2">🔔</div>
-              <h3 className="font-bold text-navy">Notifications</h3>
-              <p className="text-sm text-gray-600 mt-1">Manage email preferences</p>
-            </Link>
-
-            {userProfile?.role === 'org_admin' && (
-              <Link
-                href="/portal/org/profile"
-                className="bg-white p-6 rounded-lg border border-gray-200 hover:border-forest transition"
-              >
-                <div className="text-2xl mb-2">⚙️</div>
-                <h3 className="font-bold text-navy">Manage Organization</h3>
-                <p className="text-sm text-gray-600 mt-1">Org profile & team settings</p>
+          <h2 className="mt-14 text-2xl font-bold text-navy">Quick links</h2>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {QUICK_LINKS.map((q) => (
+              <Link key={q.href} href={q.href} className="card card-hover">
+                <div className="text-2xl">{q.icon}</div>
+                <h3 className="mt-3 font-bold text-navy">{q.title}</h3>
+                <p className="mt-1 text-sm text-ink-soft">{q.desc}</p>
+              </Link>
+            ))}
+            {isAdmin && (
+              <Link href="/portal/org/profile" className="card card-hover">
+                <div className="text-2xl">⚙️</div>
+                <h3 className="mt-3 font-bold text-navy">Manage Organization</h3>
+                <p className="mt-1 text-sm text-ink-soft">Org profile &amp; team settings</p>
               </Link>
             )}
           </div>
         </div>
       </section>
-    </main>
+    </>
   );
 }

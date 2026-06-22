@@ -1,19 +1,164 @@
 @import "tailwindcss";
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ============================================================
+   EMA of BC — Brand Design System (modern environmental)
+   Tailwind v4 theme tokens. These define the color names the
+   whole app already uses (navy / forest / sage) plus an
+   enriched palette, typography, radii and shadows.
+   ============================================================ */
+@theme {
+  /* Brand greens — primary identity */
+  --color-forest: #1f6b48;
+  --color-forest-dark: #11472f;
+  --color-forest-light: #4ca579;
+  --color-forest-50: #eef7f1;
+  --color-forest-100: #d6ecdf;
+  --color-forest-600: #1a5d3f;
+  --color-forest-700: #134a32;
+
+  /* Deep blue-greens — secondary / depth */
+  --color-navy: #133247;
+  --color-navy-dark: #0a1f2e;
+  --color-navy-light: #2d5a73;
+
+  /* Earthy accents */
+  --color-sage: #8fae86;
+  --color-sage-light: #c7d8bf;
+  --color-moss: #6b8f5e;
+
+  /* Warm highlight (awards / accents) */
+  --color-gold: #c9a24b;
+  --color-gold-light: #e6cd8f;
+
+  /* Canvas / surface neutrals (warm off-white) */
+  --color-canvas: #f6f7f3;
+  --color-surface: #ffffff;
+  --color-ink: #14201b;
+  --color-ink-soft: #43534b;
+
+  /* Typography */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Radii */
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+
+  /* Shadows */
+  --shadow-soft: 0 1px 2px rgba(16, 40, 28, 0.04), 0 8px 24px rgba(16, 40, 28, 0.06);
+  --shadow-lift: 0 12px 40px rgba(16, 40, 28, 0.12);
+  --shadow-glow: 0 16px 50px rgba(31, 107, 72, 0.22);
 }
 
-html {
-  scroll-behavior: smooth;
+/* ---------- Base ----------
+   IMPORTANT: base styles live inside @layer base so that Tailwind's
+   utility classes (px-*, mx-*, p-*, m-*) always win. Do NOT add an
+   unlayered `* { margin:0; padding:0 }` reset — unlayered CSS overrides
+   every layer in Tailwind v4 and silently cancels spacing utilities.
+   Preflight already resets margins and sets box-sizing: border-box.   */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: var(--color-forest-light);
+    color: #fff;
+  }
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Subtle scrollbar (unlayered is fine — no utility conflict) */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-thumb { background: #cbd5cd; border-radius: 999px; border: 3px solid var(--color-canvas); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-sage); }
+
+/* ---------- Reusable component utilities ---------- */
+@layer components {
+  .container-px {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-forest;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full font-semibold transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-forest/40 focus-visible:ring-offset-2;
+  }
+  .btn-lg { @apply px-7 py-3.5 text-base; }
+  .btn-md { @apply px-5 py-2.5 text-sm; }
+
+  .btn-primary {
+    @apply bg-forest text-white shadow-[0_8px_24px_rgba(31,107,72,0.28)] hover:bg-forest-dark hover:-translate-y-0.5;
+  }
+  .btn-light {
+    @apply bg-white text-navy hover:bg-forest-50 hover:-translate-y-0.5;
+  }
+  .btn-outline {
+    @apply border border-forest/30 bg-transparent text-forest hover:bg-forest-50;
+  }
+  .btn-ghost {
+    @apply text-ink-soft hover:text-forest;
+  }
+
+  .card {
+    @apply rounded-3xl border border-black/[0.06] bg-surface p-7 shadow-[var(--shadow-soft)];
+  }
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-lift)] hover:border-forest/30;
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+  .pill-forest {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold capitalize bg-forest-50 text-forest-700;
+  }
+
+  .section {
+    @apply py-20 md:py-28;
+  }
+
+  .link-arrow {
+    @apply inline-flex items-center gap-1.5 font-semibold text-forest transition-colors hover:text-forest-dark;
+  }
+
+  /* Decorative gradients */
+  .bg-forest-gradient {
+    background:
+      radial-gradient(120% 120% at 12% 0%, #1f6b48 0%, #11472f 55%, #0a1f2e 100%);
+  }
+  .bg-mesh {
+    background:
+      radial-gradient(60% 80% at 85% 10%, rgba(76,165,121,0.18) 0%, transparent 60%),
+      radial-gradient(50% 60% at 5% 95%, rgba(143,174,134,0.18) 0%, transparent 60%),
+      var(--color-canvas);
+  }
 }
+
+/* Animations */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+.animate-float-slow { animation: float-slow 7s ease-in-out infinite; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }

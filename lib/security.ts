@@ -32,11 +32,23 @@ export function addSecurityHeaders(response: NextResponse): NextResponse {
   return response;
 }
 
+// Production origins allowed to call the API. Add the apex/www domain here
+// once the custom domain is live; NEXT_PUBLIC_SITE_URL covers the active
+// deployment (e.g. the .vercel.app draft URL) automatically.
+const PRODUCTION_ALLOWED_ORIGINS = [
+  'https://emaofbc.com',
+  'https://www.emaofbc.com',
+];
+
 export function isValidOrigin(origin: string): boolean {
+  const isProduction = process.env.NODE_ENV === 'production';
+
   const allowedOrigins = [
     process.env.NEXT_PUBLIC_SITE_URL,
-    'http://localhost:3000',
-    'http://localhost:3001',
+    process.env.NEXT_PUBLIC_APP_URL,
+    ...PRODUCTION_ALLOWED_ORIGINS,
+    // localhost is only permitted outside production
+    ...(isProduction ? [] : ['http://localhost:3000', 'http://localhost:3001']),
   ].filter(Boolean);
 
   return allowedOrigins.includes(origin);
