@@ -7,9 +7,9 @@ export const metadata: Metadata = {
 };
 
 const RESPONSIBILITIES = [
-  { title: ‘Strategic Direction’, body: ‘Setting the association\’s vision, mission, and long-term goals to advance environmental excellence.’ },
-  { title: ‘Program Oversight’, body: ‘Ensuring quality professional development programming, events, and member services.’ },
-  { title: ‘Governance’, body: ‘Maintaining financial health, compliance, and organizational policies that serve members.’ },
+  { title: "Strategic Direction", body: "Setting the association’s vision, mission, and long-term goals to advance environmental excellence." },
+  { title: "Program Oversight", body: "Ensuring quality professional development programming, events, and member services." },
+  { title: "Governance", body: "Maintaining financial health, compliance, and organizational policies that serve members." },
 ];
 
 function initials(name: string): string {
