@@ -27,7 +27,6 @@ async function handleEventRegistrationCharge(
 ): Promise<void> {
   const metadata = charge.metadata || {};
   const eventId = metadata.eventId as string;
-  const eventTitle = metadata.eventTitle as string;
   const userEmail = metadata.userEmail as string;
   const userName = metadata.userName as string;
 

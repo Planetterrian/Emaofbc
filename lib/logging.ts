@@ -28,7 +28,7 @@ class Logger {
     level: LogLevel,
     message: string,
     context?: Record<string, unknown>,
-    error?: Error | string
+    error?: unknown
   ): LogEntry {
     const errorObj =
       error instanceof Error
@@ -62,14 +62,14 @@ class Logger {
     console.log(this.format(entry));
   }
 
-  warn(message: string, context?: Record<string, unknown>, error?: Error): void {
+  warn(message: string, context?: Record<string, unknown>, error?: unknown): void {
     const entry = this.createEntry('warn', message, context, error);
     console.warn(this.format(entry));
   }
 
   error(
     message: string,
-    error?: Error | string,
+    error?: unknown,
     context?: Record<string, unknown>
   ): void {
     const entry = this.createEntry('error', message, context, error);
@@ -94,7 +94,7 @@ class Logger {
     method: string,
     path: string,
     statusCode: number,
-    error: Error | string,
+    error: unknown,
     context?: Record<string, unknown>
   ): void {
     this.error(
