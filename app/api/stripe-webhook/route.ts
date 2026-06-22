@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyWebhookSignature } from '@/app/actions';
 import { sendEmail } from '@/lib/mailer';
+import { getEmailTemplate, EmailData } from '@/lib/email-templates';
 import { getMembershipExpiry, MembershipTier } from '@/lib/membership';
 import { createServiceRoleClient } from '@/lib/supabase';
 import Stripe from 'stripe';
@@ -10,6 +11,147 @@ export const dynamic = 'force-dynamic';
 async function handleChargeSucceeded(charge: Stripe.Charge): Promise<void> {
   const supabase = createServiceRoleClient();
 
+  const metadata = charge.metadata || {};
+
+  // Check if this is an event registration or membership payment
+  if (metadata.eventId) {
+    await handleEventRegistrationCharge(supabase, charge);
+  } else {
+    await handleMembershipCharge(supabase, charge);
+  }
+}
+
+async function handleEventRegistrationCharge(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  charge: Stripe.Charge
+): Promise<void> {
+  const metadata = charge.metadata || {};
+  const eventId = metadata.eventId as string;
+  const eventTitle = metadata.eventTitle as string;
+  const userEmail = metadata.userEmail as string;
+  const userName = metadata.userName as string;
+
+  if (!eventId || !userEmail || !userName) {
+    console.error('Missing required event metadata:', { eventId, userEmail, userName });
+    throw new Error('Missing required event metadata');
+  }
+
+  // Find or create user
+  let { data: user } = await supabase
+    .from('users')
+    .select('*')
+    .eq('email', userEmail)
+    .single();
+
+  let userId = user?.id;
+
+  if (!user) {
+    // Extract domain for org lookup
+    const emailDomain = userEmail.split('@')[1];
+    let orgId = null;
+
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('email_domain', emailDomain)
+      .single();
+
+    if (org) {
+      orgId = org.id;
+    }
+
+    // Create new user
+    const { data: newUser, error: userError } = await supabase
+      .from('users')
+      .insert({
+        email: userEmail,
+        full_name: userName,
+        org_id: orgId,
+        role: 'employee',
+      })
+      .select()
+      .single();
+
+    if (userError) {
+      console.error('Failed to create user:', userError);
+      throw userError;
+    }
+
+    userId = newUser.id;
+  }
+
+  // Check if registration already exists
+  const { data: existingReg } = await supabase
+    .from('registrations')
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('user_id', userId)
+    .single();
+
+  if (existingReg) {
+    console.warn(`User ${userId} already registered for event ${eventId}`);
+    return;
+  }
+
+  // Create registration
+  const { error: regError } = await supabase
+    .from('registrations')
+    .insert({
+      event_id: eventId,
+      user_id: userId,
+      org_id: user?.org_id || null,
+      payment_status: 'paid',
+      price_paid_cents: charge.amount,
+      attended: false,
+      pd_credit_recorded: false,
+    });
+
+  if (regError) {
+    console.error('Failed to create registration:', regError);
+    throw regError;
+  }
+
+  // Fetch event details for confirmation email
+  const { data: event } = await supabase
+    .from('events')
+    .select('*')
+    .eq('id', eventId)
+    .single();
+
+  if (event) {
+    try {
+      const eventDate = new Date(event.starts_at).toLocaleDateString('en-CA', {
+        weekday: 'long',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+      const eventTime = new Date(event.starts_at).toLocaleTimeString('en-CA', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+
+      const emailData: EmailData = {
+        eventTitle: event.title,
+        eventDate,
+        eventTime,
+        eventLocation: event.venue || 'TBD',
+        calendarDownloadUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://emaofbc.com'}/events/${eventId}/calendar.ics`,
+        eventUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://emaofbc.com'}/events/${eventId}`,
+      };
+
+      const { subject, html } = getEmailTemplate('event-registration-confirmation', emailData);
+      await sendEmail(userEmail, subject, html);
+    } catch (emailError) {
+      console.error('Failed to send event registration email:', emailError);
+      // Don't fail the registration if email fails
+    }
+  }
+
+  console.log(`Successfully processed event registration for user ${userId} to event ${eventId}`);
+}
+
+async function handleMembershipCharge(supabase: ReturnType<typeof createServiceRoleClient>, charge: Stripe.Charge): Promise<void> {
   const metadata = charge.metadata || {};
   const orgName = metadata.orgName as string;
   const orgType = metadata.orgType as MembershipTier;
@@ -94,34 +236,17 @@ async function handleChargeSucceeded(charge: Stripe.Charge): Promise<void> {
     throw updateError;
   }
 
-  // Send confirmation email
-  const confirmationHtml = `
-    <h2>Welcome to EMA of BC!</h2>
-    <p>Thank you for joining the Environmental Managers Association of BC.</p>
-    <h3>Your Membership Details</h3>
-    <ul>
-      <li><strong>Organization:</strong> ${orgName}</li>
-      <li><strong>Tier:</strong> ${orgType.replace(/_/g, ' ').toUpperCase()}</li>
-      <li><strong>Valid Through:</strong> ${membershipEnd.toLocaleDateString()}</li>
-      <li><strong>Amount Paid:</strong> $${(charge.amount / 100).toFixed(2)}</li>
-    </ul>
-    <p>Your organization members can now:</p>
-    <ul>
-      <li>Register for events at member pricing</li>
-      <li>Access professional development credits</li>
-      <li>Participate in awards submissions</li>
-      <li>View the member directory</li>
-    </ul>
-    <p>For questions, contact <a href="mailto:membership@emaofbc.com">membership@emaofbc.com</a></p>
-  `;
-
+  // Send confirmation email using template
   try {
-    await sendEmail(
-      orgEmail,
-      '✓ Welcome to EMA of BC - Membership Confirmed',
-      confirmationHtml,
-      { replyTo: 'membership@emaofbc.com' }
-    );
+    const data: EmailData = {
+      orgName,
+      tier: orgType,
+      amount: charge.amount / 100,
+      paidThrough: membershipEnd.toLocaleDateString(),
+      portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://emaofbc.com'}/portal/org/profile`,
+    };
+    const { subject, html } = getEmailTemplate('membership-confirmation', data);
+    await sendEmail(orgEmail, subject, html, { replyTo: 'membership@emaofbc.com' });
   } catch (emailError) {
     console.error('Failed to send confirmation email:', emailError);
     // Don't throw - email failure shouldn't block the payment processing

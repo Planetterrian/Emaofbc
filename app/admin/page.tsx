@@ -144,6 +144,28 @@ export default async function AdminDashboard() {
             </Link>
           </div>
         </div>
+
+        {/* Email Management */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold text-navy mb-4">Email Management</h2>
+          <p className="text-gray-600 text-sm mb-6">
+            Test and preview email templates used throughout the platform.
+          </p>
+          <div className="space-y-3">
+            <Link
+              href="/admin/email-templates"
+              className="block w-full bg-forest hover:bg-forest-dark text-white font-semibold px-4 py-2 rounded-lg transition text-center"
+            >
+              Test Email Templates
+            </Link>
+            <Link
+              href="/admin/newsletter"
+              className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-900 font-semibold px-4 py-2 rounded-lg transition text-center"
+            >
+              Newsletter Drafts
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Recent Activity */}
