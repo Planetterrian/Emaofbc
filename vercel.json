@@ -8,47 +8,5 @@
       "path": "/api/cron",
       "schedule": "0 9 * * *"
     }
-  ],
-  "env": {
-    "NEXT_PUBLIC_SUPABASE_URL": {
-      "description": "Supabase project URL",
-      "required": true
-    },
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
-      "description": "Supabase anonymous key for public access",
-      "required": true
-    },
-    "SUPABASE_SERVICE_ROLE_KEY": {
-      "description": "Supabase service role key (server-side only)",
-      "required": true
-    },
-    "STRIPE_SECRET_KEY": {
-      "description": "Stripe secret key (server-side only)",
-      "required": true
-    },
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": {
-      "description": "Stripe publishable key for client",
-      "required": true
-    },
-    "STRIPE_WEBHOOK_SECRET": {
-      "description": "Stripe webhook signing secret",
-      "required": true
-    },
-    "XAI_API_KEY": {
-      "description": "xAI API key for Grok (server-side only)",
-      "required": true
-    },
-    "XAI_MODEL": {
-      "description": "xAI model name (always use grok-latest)",
-      "required": true
-    },
-    "RESEND_API_KEY": {
-      "description": "Resend email API key (server-side only)",
-      "required": true
-    },
-    "NEXT_PUBLIC_SITE_URL": {
-      "description": "Your production site URL",
-      "required": true
-    }
-  }
+  ]
 }
