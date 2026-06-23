@@ -7,16 +7,16 @@ export const metadata: Metadata = {
 };
 
 const RESPONSIBILITIES = [
-  { title: "Strategic Direction", body: "Setting the association’s vision, mission, and long-term goals to advance environmental excellence." },
+  { title: "Strategic Direction", body: "Setting the association's vision, mission, and long-term goals to advance environmental excellence." },
   { title: "Program Oversight", body: "Ensuring quality professional development programming, events, and member services." },
   { title: "Governance", body: "Maintaining financial health, compliance, and organizational policies that serve members." },
 ];
 
 function initials(name: string): string {
   return name
-    .split(‘ ‘)
+    .split(" ")
     .map((n) => n[0])
-    .join(‘’)
+    .join("")
     .toUpperCase();
 }
 
@@ -34,7 +34,6 @@ function MemberCard({ member }: { member: BoardMember }) {
 }
 
 function BoardPage() {
-
   return (
     <>
       <section className="bg-forest-gradient text-white">
@@ -42,7 +41,7 @@ function BoardPage() {
           <span className="eyebrow text-sage-light">Leadership</span>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight md:text-5xl">Board of Directors</h1>
           <p className="mt-5 max-w-2xl text-lg text-white/80">
-            Volunteer leaders driving EMA’s mission to advance environmental excellence across BC.
+            Volunteer leaders driving EMA's mission to advance environmental excellence across BC.
           </p>
         </div>
       </section>
