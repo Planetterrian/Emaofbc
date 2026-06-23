@@ -1,29 +1,39 @@
 import type { Metadata } from 'next';
-import { getBoardMembers } from '@/lib/db';
+import { executiveBoard, directorsAtLarge, type BoardMember } from '@/lib/board-members';
 
 export const metadata: Metadata = {
   title: 'Board of Directors | EMA of BC',
   description: 'Meet the leaders and members of the EMA of BC Board of Directors.',
 };
 
-export const dynamic = 'force-dynamic';
-
-const ROLE_ORDER = ['President', 'Vice President', 'Treasurer', 'Secretary', 'Director-at-Large', 'Past President'];
-
 const RESPONSIBILITIES = [
-  { title: 'Strategic Direction', body: 'Setting the association’s vision, mission, and long-term goals to advance environmental excellence.' },
-  { title: 'Program Oversight', body: 'Ensuring quality professional development programming, events, and member services.' },
-  { title: 'Governance', body: 'Maintaining financial health, compliance, and organizational policies that serve members.' },
+  { title: "Strategic Direction", body: "Setting the association's vision, mission, and long-term goals to advance environmental excellence." },
+  { title: "Program Oversight", body: "Ensuring quality professional development programming, events, and member services." },
+  { title: "Governance", body: "Maintaining financial health, compliance, and organizational policies that serve members." },
 ];
 
-async function BoardPage() {
-  const boardMembers = await getBoardMembers().catch(() => []);
-  const grouped = boardMembers.reduce((acc: Record<string, any[]>, m: any) => {
-    const role = m.role || 'Member';
-    (acc[role] ||= []).push(m);
-    return acc;
-  }, {} as Record<string, any[]>);
+function initials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase();
+}
 
+function MemberCard({ member }: { member: BoardMember }) {
+  return (
+    <div className="card card-hover">
+      <div className="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-navy to-forest text-xl font-bold text-white">
+        {initials(member.name)}
+      </div>
+      <h3 className="mt-4 text-xl font-bold text-navy">{member.name}</h3>
+      <p className="font-semibold text-forest">{member.title}</p>
+      <p className="text-sm text-ink-soft mt-2">{member.company}</p>
+    </div>
+  );
+}
+
+function BoardPage() {
   return (
     <>
       <section className="bg-forest-gradient text-white">
@@ -31,7 +41,7 @@ async function BoardPage() {
           <span className="eyebrow text-sage-light">Leadership</span>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight md:text-5xl">Board of Directors</h1>
           <p className="mt-5 max-w-2xl text-lg text-white/80">
-            Volunteer leaders driving EMA’s mission to advance environmental excellence across BC.
+            Volunteer leaders driving EMA's mission to advance environmental excellence across BC.
           </p>
         </div>
       </section>
@@ -41,43 +51,34 @@ async function BoardPage() {
           <div className="card max-w-3xl">
             <h2 className="text-2xl font-bold text-navy">Our leadership</h2>
             <p className="mt-4 text-ink-soft">
-              The Board is composed of experienced environmental professionals representing corporate,
-              government, consulting, and non-profit organizations — all dedicated to promoting
-              environmental excellence, professional development, and collaboration across BC.
+              As a not-for-profit society, our success heavily relies on the Board of Directors,
+              composed of volunteers from our member organizations.
             </p>
           </div>
 
-          {boardMembers.length === 0 ? (
-            <div className="mt-12 rounded-3xl border border-dashed border-forest/20 bg-forest-50/40 p-14 text-center">
-              <div className="text-4xl">🌿</div>
-              <p className="mt-3 text-lg font-semibold text-navy">Board members will be listed here soon.</p>
+          <div className="mt-14">
+            <h2 className="flex items-center gap-3 text-2xl font-bold text-navy">
+              <span className="h-7 w-1.5 rounded-full bg-forest" />
+              Executive
+            </h2>
+            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {executiveBoard.map((member) => (
+                <MemberCard key={member.name} member={member} />
+              ))}
             </div>
-          ) : (
-            ROLE_ORDER.map((role) =>
-              grouped[role] ? (
-                <div key={role} className="mt-14">
-                  <h2 className="flex items-center gap-3 text-2xl font-bold text-navy">
-                    <span className="h-7 w-1.5 rounded-full bg-forest" />
-                    {role}
-                  </h2>
-                  <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {grouped[role].map((m: any) => (
-                      <div key={m.id} className="card card-hover">
-                        <div className="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-navy to-forest text-xl font-bold text-white">
-                          {m.full_name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
-                        </div>
-                        <h3 className="mt-4 text-xl font-bold text-navy">{m.full_name}</h3>
-                        <p className="font-semibold text-forest">{role}</p>
-                        <div className="mt-4 border-t border-black/[0.06] pt-4">
-                          <a href={`mailto:${m.email}`} className="link-arrow">Contact →</a>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null
-            )
-          )}
+          </div>
+
+          <div className="mt-14">
+            <h2 className="flex items-center gap-3 text-2xl font-bold text-navy">
+              <span className="h-7 w-1.5 rounded-full bg-forest" />
+              Directors at Large
+            </h2>
+            <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {directorsAtLarge.map((member) => (
+                <MemberCard key={member.name} member={member} />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 

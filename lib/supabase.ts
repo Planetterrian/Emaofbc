@@ -28,6 +28,17 @@ export const supabase = isValidSupabaseUrl(supabaseUrl) && supabaseAnonKey
       }),
     } as any;
 
+// Browser client for client components. Returns null when credentials are
+// missing or malformed (e.g. during a build/prerender pass without env vars),
+// which avoids "Invalid supabaseUrl" crashes. At runtime in the browser the
+// public env vars are present, so a real client is returned.
+export function createBrowserClient() {
+  if (!isValidSupabaseUrl(supabaseUrl) || !supabaseAnonKey) {
+    return null as unknown as ReturnType<typeof createClient>;
+  }
+  return createClient(supabaseUrl as string, supabaseAnonKey);
+}
+
 // Server-side client with service role (admin access)
 export function createServiceRoleClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

@@ -49,10 +49,20 @@ export default function ContactPage() {
             </div>
 
             <div className="mt-8 card">
+              <h3 className="text-lg font-bold text-navy">Phone</h3>
+              <a href="tel:+16049982226" className="mt-2 text-lg font-semibold text-forest hover:text-forest-dark transition">
+                604-998-2226
+              </a>
+              <p className="text-sm text-ink-soft mt-1">Monday–Friday, 9 AM–5 PM PT</p>
+            </div>
+
+            <div className="mt-8 card">
               <h3 className="text-lg font-bold text-navy">Mailing address</h3>
               <p className="mt-2 text-ink-soft">
                 Environmental Managers Association of BC<br />
-                Vancouver, British Columbia, Canada
+                P.O. Box 3741<br />
+                Vancouver, BC V6B 3Z1<br />
+                Canada
               </p>
               <a
                 href="https://www.linkedin.com/company/ema-of-bc/"

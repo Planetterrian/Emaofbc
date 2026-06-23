@@ -30,8 +30,8 @@ export default function AboutPage() {
             Advancing environmental excellence through professional collaboration
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/80">
-            The Environmental Managers Association of BC encourages education, shares lessons learned,
-            and creates a forum for environmental management across British Columbia.
+            A non-profit association founded in the early 1990s to encourage education, share lessons
+            learned, and create a forum for environmental management issues across British Columbia.
           </p>
         </div>
       </section>

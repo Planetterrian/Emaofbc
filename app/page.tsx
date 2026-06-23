@@ -82,9 +82,8 @@ async function HomePage() {
               </span>
             </h1>
             <p className="mt-6 max-w-xl text-lg text-white/80">
-              The Environmental Managers Association of BC is the province's premier professional
-              network — encouraging education, sharing lessons learned, and creating a forum for
-              environmental management, now powered by intelligent tools.
+              A non-profit association founded in the early 1990s to encourage education, share lessons
+              learned, and create a forum for environmental management issues across British Columbia.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/join" className="btn btn-lg btn-light">Become a Member</Link>

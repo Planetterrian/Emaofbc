@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@/lib/supabase';
 import { validateEmail_Safe } from '@/lib/validation';
+
+export const dynamic = 'force-dynamic';
 
 interface TeamMember {
   id: string;
@@ -28,10 +30,7 @@ export default function TeamManagementPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('employee');
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-  );
+  const supabase = createBrowserClient();
 
   useEffect(() => {
     const checkAuth = async () => {
