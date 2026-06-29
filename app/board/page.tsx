@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getBoardMembers } from '@/lib/db';
 import { executiveBoard, directorsAtLarge, type BoardMember } from '@/lib/board-members';
 
 export const metadata: Metadata = {
@@ -7,17 +8,13 @@ export const metadata: Metadata = {
 };
 
 const RESPONSIBILITIES = [
-  { title: "Strategic Direction", body: "Setting the association's vision, mission, and long-term goals to advance environmental excellence." },
-  { title: "Program Oversight", body: "Ensuring quality professional development programming, events, and member services." },
-  { title: "Governance", body: "Maintaining financial health, compliance, and organizational policies that serve members." },
+  { title: 'Strategic Direction', body: "Setting the association's vision, mission, and long-term goals to advance environmental excellence." },
+  { title: 'Program Oversight', body: 'Ensuring quality professional development programming, events, and member services.' },
+  { title: 'Governance', body: 'Maintaining financial health, compliance, and organizational policies that serve members.' },
 ];
 
 function initials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase();
+  return name.split(' ').map((n) => n[0]).join('').toUpperCase();
 }
 
 function MemberCard({ member }: { member: BoardMember }) {
@@ -33,7 +30,26 @@ function MemberCard({ member }: { member: BoardMember }) {
   );
 }
 
-function BoardPage() {
+async function BoardPage() {
+  const dbMembers = await getBoardMembers().catch(() => []);
+  const useDb = dbMembers.length > 0;
+
+  const executive: BoardMember[] = useDb
+    ? dbMembers.slice(0, Math.ceil(dbMembers.length / 2)).map((m) => ({
+        name: m.full_name,
+        title: m.role === 'board' ? 'Director' : m.role,
+        company: '',
+      }))
+    : executiveBoard;
+
+  const directors: BoardMember[] = useDb
+    ? dbMembers.slice(Math.ceil(dbMembers.length / 2)).map((m) => ({
+        name: m.full_name,
+        title: 'Director at Large',
+        company: '',
+      }))
+    : directorsAtLarge;
+
   return (
     <>
       <section className="bg-forest-gradient text-white">
@@ -41,7 +57,7 @@ function BoardPage() {
           <span className="eyebrow text-sage-light">Leadership</span>
           <h1 className="mt-4 text-4xl font-extrabold leading-tight md:text-5xl">Board of Directors</h1>
           <p className="mt-5 max-w-2xl text-lg text-white/80">
-            Volunteer leaders driving EMA's mission to advance environmental excellence across BC.
+            Volunteer leaders driving EMA&apos;s mission to advance environmental excellence across BC.
           </p>
         </div>
       </section>
@@ -62,7 +78,7 @@ function BoardPage() {
               Executive
             </h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {executiveBoard.map((member) => (
+              {executive.map((member) => (
                 <MemberCard key={member.name} member={member} />
               ))}
             </div>
@@ -74,7 +90,7 @@ function BoardPage() {
               Directors at Large
             </h2>
             <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {directorsAtLarge.map((member) => (
+              {directors.map((member) => (
                 <MemberCard key={member.name} member={member} />
               ))}
             </div>

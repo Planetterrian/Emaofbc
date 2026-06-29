@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { MEMBERSHIP_TIERS, MembershipTier } from '@/lib/membership';
+import { MEMBERSHIP_TIERS, MembershipTier, calculateProration } from '@/lib/membership';
 import { createStripeCheckout } from '@/app/actions';
 
 const BENEFITS = [
@@ -34,12 +34,21 @@ export default function JoinPage() {
     if (params.get('success') === 'true') setSuccess(true);
   }, []);
 
+  const proratedCents = calculateProration(orgType, new Date());
+  const isMidYear = new Date().getMonth() > 0;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setIsLoading(true);
     try {
-      const checkoutUrl = await createStripeCheckout(orgName, orgType, orgEmail);
+      const checkoutUrl = await createStripeCheckout(
+        orgName,
+        orgType,
+        orgEmail,
+        isMidYear,
+        isMidYear ? proratedCents : undefined
+      );
       if (checkoutUrl) window.location.href = checkoutUrl;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -138,7 +147,16 @@ export default function JoinPage() {
                           <div className="font-semibold text-navy">{tier.name}</div>
                           <p className="text-sm text-ink-soft">{tier.description}</p>
                           <div className="mt-2 text-lg font-bold text-forest">
-                            ${(tier.priceCents / 100).toFixed(2)} CAD + GST
+                            {isMidYear ? (
+                              <>
+                                ${(proratedCents / 100).toFixed(2)} CAD + GST
+                                <span className="ml-2 text-sm font-normal text-ink-soft line-through">
+                                  ${(tier.priceCents / 100).toFixed(2)}
+                                </span>
+                              </>
+                            ) : (
+                              <>${(tier.priceCents / 100).toFixed(2)} CAD + GST</>
+                            )}
                           </div>
                         </div>
                       </label>

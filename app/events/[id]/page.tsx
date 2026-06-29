@@ -4,6 +4,7 @@ import { getEventById, getSponsorshipsForEvent } from '@/lib/db';
 import { formatDate } from 'date-fns';
 import { generateEventSchema } from '@/lib/schema';
 import { notFound } from 'next/navigation';
+import { EventRegisterButton } from '@/components/EventRegisterButton';
 
 export async function generateMetadata({
   params,
@@ -141,12 +142,14 @@ async function EventDetailPage({
                 <div className="mb-12">
                   <h3 className="text-2xl font-bold text-navy mb-6">Event Sponsors</h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                    {sponsorships.map((sponsor) => (
+                    {sponsorships.map((sponsor: any) => (
                       <div key={sponsor.id} className="bg-gray-50 p-6 rounded-lg text-center">
                         <div className="text-xs font-bold text-forest uppercase mb-3">
                           {sponsor.tier} Sponsor
                         </div>
-                        <div className="text-navy font-semibold">{sponsor.org_id}</div>
+                        <div className="text-navy font-semibold">
+                          {sponsor.organizations?.name || 'Sponsor'}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -170,17 +173,13 @@ async function EventDetailPage({
                   </div>
                 ) : null}
 
-                <Link
-                  href={`/events/${params.id}/register`}
-                  className="block w-full bg-forest hover:bg-forest-dark text-white font-bold py-3 px-4 rounded-lg transition text-center disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-                  onClick={(e) => {
-                    if (isPast || event.status === 'full') {
-                      e.preventDefault();
-                    }
-                  }}
-                >
-                  {isPast ? 'Event Passed' : event.status === 'full' ? 'Join Waitlist' : 'Register Now'}
-                </Link>
+                <div className="mb-4">
+                  <EventRegisterButton
+                    eventId={params.id}
+                    isPast={isPast}
+                    isFull={event.status === 'full'}
+                  />
+                </div>
 
                 {!isPast && event.status !== 'full' && (
                   <p className="text-xs text-gray-600 text-center">

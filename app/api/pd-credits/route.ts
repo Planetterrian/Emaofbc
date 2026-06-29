@@ -1,26 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getPDCreditsHistory, getUserPDCredits } from '@/lib/db';
+import { createServerSupabaseClient } from '@/lib/auth';
+import { createApiHandler } from '@/lib/api-handler';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
-  try {
-    // In a real app, you'd get userId from Supabase auth session
-    // For now, we'll require it as a query param
-    const userId = req.nextUrl.searchParams.get('userId');
+async function handler() {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 });
-    }
-
-    const [creditsHistory, total] = await Promise.all([
-      getPDCreditsHistory(userId),
-      getUserPDCredits(userId),
-    ]);
-
-    return NextResponse.json({ credits: creditsHistory, total });
-  } catch (error) {
-    console.error('PD credits fetch failed:', error);
-    return NextResponse.json({ error: 'Failed to fetch PD credits' }, { status: 500 });
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const [creditsHistory, total] = await Promise.all([
+    getPDCreditsHistory(user.id),
+    getUserPDCredits(user.id),
+  ]);
+
+  return NextResponse.json({ credits: creditsHistory, total });
 }
+
+export const GET = createApiHandler(async () => handler(), {
+  method: 'GET',
+  rateLimit: { limit: 30, window: 60 },
+});

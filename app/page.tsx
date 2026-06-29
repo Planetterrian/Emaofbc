@@ -38,9 +38,9 @@ function IconSpark() {
 
 const AI_TOOLS = [
   { title: 'AI Member Assistant', desc: 'Ask anything about events, membership, PD credits or environmental practice — instant, accurate answers.', href: '/member-assistant' },
-  { title: 'Smart Event Picks', desc: 'Personalized recommendations surface the workshops and tours most relevant to your work.', href: '/events' },
-  { title: 'AI Event Copy', desc: 'Draft polished event descriptions and invitations from a few details in seconds.', href: '/admin/ai-event-copy' },
-  { title: 'AI Newsletter Drafts', desc: 'Turn recent events and activity into a ready-to-send newsletter draft.', href: '/admin/newsletter' },
+  { title: 'Smart Event Picks', desc: 'Browse upcoming workshops and tours filtered by type — find PD-eligible events fast.', href: '/events?type=workshop' },
+  { title: 'Member Portal', desc: 'Track PD credits, manage your organization, and register for events in one place.', href: '/portal' },
+  { title: 'Become a Member', desc: 'Join BC\'s premier network of environmental managers with online signup and secure payment.', href: '/join' },
 ];
 
 const EVENT_EMOJI: Record<string, string> = {
@@ -73,7 +73,7 @@ async function HomePage() {
           <div className="lg:col-span-7 animate-fade-up">
             <span className="eyebrow text-sage-light">
               <span className="h-1.5 w-1.5 rounded-full bg-sage-light" />
-              British Columbia · Since 2003
+              British Columbia · Since the 1990s
             </span>
             <h1 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
               Advancing environmental
@@ -94,8 +94,8 @@ async function HomePage() {
 
             <dl className="mt-12 grid max-w-lg grid-cols-3 gap-6 border-t border-white/15 pt-8">
               {[
-                ['20+', 'Years of impact'],
-                ['100s', 'Members & orgs'],
+                ['30+', 'Years of impact'],
+                ['55+', 'Member organizations'],
                 ['PD', 'Credits earned'],
               ].map(([n, l]) => (
                 <div key={l}>

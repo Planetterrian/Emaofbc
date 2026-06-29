@@ -8,6 +8,7 @@ import { createClient } from '@supabase/supabase-js';
 const QUICK_LINKS = [
   { href: '/portal/pd-credits', icon: '📊', title: 'PD Credits', desc: 'Track your professional development' },
   { href: '/events', icon: '📅', title: 'Browse Events', desc: 'View and register for upcoming events' },
+  { href: '/awards/submit', icon: '🏆', title: 'Submit Award', desc: 'Nominate your organization for an EMA award' },
   { href: '/directory', icon: '👥', title: 'Member Directory', desc: 'Connect with other members' },
   { href: '/member-assistant', icon: '✨', title: 'AI Assistant', desc: 'Ask questions about EMA' },
   { href: '/portal/notifications', icon: '🔔', title: 'Notifications', desc: 'Manage email preferences' },

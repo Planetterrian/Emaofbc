@@ -39,8 +39,9 @@ We do not sell personal information. We share it only with service providers who
 - **Stripe** (payment processing)
 - **Resend** (transactional email delivery)
 - **Vercel** (application hosting)
+- **xAI (Grok)** (AI assistant and content drafting for member-facing Q&A and admin newsletter/event copy tools)
 
-These providers process data on our behalf under their own privacy and security commitments.
+These providers process data on our behalf under their own privacy and security commitments. Questions sent to the AI assistant are transmitted to xAI for processing; do not include sensitive personal or payment information in AI chat messages.
 
 ## 6. Data Retention
 

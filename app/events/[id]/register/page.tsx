@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import type { Event } from '@/lib/types';
 import { createRegistrationCheckout } from '@/app/actions';
@@ -42,14 +42,13 @@ export default function RegisterPage({ params }: RegisterPageProps) {
     }
   };
 
-  // Initialize on client mount
-  useState(() => {
+  useEffect(() => {
     const getParams = async () => {
       const p = await params;
       loadEvent(p.id);
     };
     getParams();
-  });
+  }, [params]);
 
   const checkMembership = async (email: string) => {
     if (!email.includes('@')) {
