@@ -4,82 +4,54 @@ import { sendEmail } from '@/lib/mailer';
 import { getEmailTemplate, EmailData } from '@/lib/email-templates';
 import { getMembershipExpiry, MembershipTier } from '@/lib/membership';
 import { createServiceRoleClient } from '@/lib/supabase';
+import { inviteOrgAdmin } from '@/app/actions';
 import Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic';
 
-async function handleChargeSucceeded(charge: Stripe.Charge): Promise<void> {
-  const supabase = createServiceRoleClient();
+type Metadata = Record<string, string>;
 
-  const metadata = charge.metadata || {};
-
-  // Check if this is an event registration or membership payment
-  if (metadata.eventId) {
-    await handleEventRegistrationCharge(supabase, charge);
-  } else {
-    await handleMembershipCharge(supabase, charge);
-  }
-}
-
-async function handleEventRegistrationCharge(
+async function handleEventRegistration(
   supabase: ReturnType<typeof createServiceRoleClient>,
-  charge: Stripe.Charge
+  metadata: Metadata,
+  amountCents: number,
+  stripeRef: string
 ): Promise<void> {
-  const metadata = charge.metadata || {};
-  const eventId = metadata.eventId as string;
-  const userEmail = metadata.userEmail as string;
-  const userName = metadata.userName as string;
+  const eventId = metadata.eventId;
+  const userEmail = metadata.userEmail;
+  const userName = metadata.userName;
 
   if (!eventId || !userEmail || !userName) {
-    console.error('Missing required event metadata:', { eventId, userEmail, userName });
     throw new Error('Missing required event metadata');
   }
 
-  // Find or create user
-  let { data: user } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', userEmail)
-    .single();
-
+  let { data: user } = await supabase.from('users').select('*').eq('email', userEmail).single();
   let userId = user?.id;
 
   if (!user) {
-    // Extract domain for org lookup
     const emailDomain = userEmail.split('@')[1];
-    let orgId = null;
-
     const { data: org } = await supabase
       .from('organizations')
       .select('id')
       .eq('email_domain', emailDomain)
       .single();
 
-    if (org) {
-      orgId = org.id;
-    }
-
-    // Create new user
     const { data: newUser, error: userError } = await supabase
       .from('users')
       .insert({
         email: userEmail,
         full_name: userName,
-        org_id: orgId,
+        org_id: org?.id || null,
         role: 'employee',
       })
       .select()
       .single();
 
-    if (userError) {
-      console.error('Failed to create user:', userError);
-      throw userError;
-    }
-
+    if (userError) throw userError;
     userId = newUser.id;
+    user = newUser;
   }
 
-  // Check if registration already exists
   const { data: existingReg } = await supabase
     .from('registrations')
     .select('*')
@@ -87,35 +59,21 @@ async function handleEventRegistrationCharge(
     .eq('user_id', userId)
     .single();
 
-  if (existingReg) {
-    console.warn(`User ${userId} already registered for event ${eventId}`);
-    return;
-  }
+  if (existingReg) return;
 
-  // Create registration
-  const { error: regError } = await supabase
-    .from('registrations')
-    .insert({
-      event_id: eventId,
-      user_id: userId,
-      org_id: user?.org_id || null,
-      payment_status: 'paid',
-      price_paid_cents: charge.amount,
-      attended: false,
-      pd_credit_recorded: false,
-    });
+  const { error: regError } = await supabase.from('registrations').insert({
+    event_id: eventId,
+    user_id: userId,
+    org_id: user?.org_id || null,
+    payment_status: 'paid',
+    price_paid_cents: amountCents,
+    attended: false,
+    pd_credit_recorded: false,
+  });
 
-  if (regError) {
-    console.error('Failed to create registration:', regError);
-    throw regError;
-  }
+  if (regError) throw regError;
 
-  // Fetch event details for confirmation email
-  const { data: event } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', eventId)
-    .single();
+  const { data: event } = await supabase.from('events').select('*').eq('id', eventId).single();
 
   if (event) {
     try {
@@ -143,28 +101,28 @@ async function handleEventRegistrationCharge(
       await sendEmail(userEmail, subject, html);
     } catch (emailError) {
       console.error('Failed to send event registration email:', emailError);
-      // Don't fail the registration if email fails
     }
   }
 
-  console.log(`Successfully processed event registration for user ${userId} to event ${eventId}`);
+  console.log(`Event registration processed: ${userId} -> ${eventId} (${stripeRef})`);
 }
 
-async function handleMembershipCharge(supabase: ReturnType<typeof createServiceRoleClient>, charge: Stripe.Charge): Promise<void> {
-  const metadata = charge.metadata || {};
-  const orgName = metadata.orgName as string;
+async function handleMembershipPayment(
+  supabase: ReturnType<typeof createServiceRoleClient>,
+  metadata: Metadata,
+  amountCents: number,
+  stripeRef: string
+): Promise<void> {
+  const orgName = metadata.orgName;
   const orgType = metadata.orgType as MembershipTier;
-  const orgEmail = metadata.orgEmail as string;
+  const orgEmail = metadata.orgEmail;
 
   if (!orgName || !orgType || !orgEmail) {
-    console.error('Missing required metadata:', { orgName, orgType, orgEmail });
-    throw new Error('Missing required metadata');
+    throw new Error('Missing required membership metadata');
   }
 
-  // Extract email domain for auto-association
   const emailDomain = orgEmail.split('@')[1];
 
-  // Check if organization already exists
   let organization = null;
   const { data: existingOrgs } = await supabase
     .from('organizations')
@@ -175,7 +133,6 @@ async function handleMembershipCharge(supabase: ReturnType<typeof createServiceR
   if (existingOrgs && existingOrgs.length > 0) {
     organization = existingOrgs[0];
   } else {
-    // Create new organization
     const { data: newOrg, error: orgError } = await supabase
       .from('organizations')
       .insert({
@@ -183,45 +140,35 @@ async function handleMembershipCharge(supabase: ReturnType<typeof createServiceR
         type: orgType,
         email_domain: emailDomain,
         status: 'active',
+        directory_opt_in: false,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .select()
       .single();
 
-    if (orgError) {
-      console.error('Failed to create organization:', orgError);
-      throw orgError;
-    }
-
+    if (orgError) throw orgError;
     organization = newOrg;
   }
 
-  // Create or update membership
   const membershipStart = new Date();
   const membershipEnd = getMembershipExpiry(orgType, membershipStart);
 
-  const { error: membershipError } = await supabase
-    .from('memberships')
-    .insert({
-      org_id: organization.id,
-      period_start: membershipStart.toISOString().split('T')[0],
-      period_end: membershipEnd.toISOString().split('T')[0],
-      tier: orgType,
-      amount_cents: charge.amount,
-      status: 'paid',
-      stripe_ref: charge.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    });
+  const { error: membershipError } = await supabase.from('memberships').insert({
+    org_id: organization.id,
+    period_start: membershipStart.toISOString().split('T')[0],
+    period_end: membershipEnd.toISOString().split('T')[0],
+    tier: orgType,
+    amount_cents: amountCents,
+    status: 'paid',
+    stripe_ref: stripeRef,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  });
 
-  if (membershipError) {
-    console.error('Failed to create membership:', membershipError);
-    throw membershipError;
-  }
+  if (membershipError) throw membershipError;
 
-  // Update organization status and paid_through date
-  const { error: updateError } = await supabase
+  await supabase
     .from('organizations')
     .update({
       status: 'active',
@@ -230,122 +177,71 @@ async function handleMembershipCharge(supabase: ReturnType<typeof createServiceR
     })
     .eq('id', organization.id);
 
-  if (updateError) {
-    console.error('Failed to update organization:', updateError);
-    throw updateError;
+  try {
+    await inviteOrgAdmin(orgEmail, orgName, organization.id);
+  } catch (inviteError) {
+    console.error('Failed to invite org admin:', inviteError);
   }
 
-  // Send confirmation email using template
   try {
     const data: EmailData = {
       orgName,
       tier: orgType,
-      amount: charge.amount / 100,
+      amount: amountCents / 100,
       paidThrough: membershipEnd.toLocaleDateString(),
-      portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://emaofbc.com'}/portal/org/profile`,
+      portalUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://emaofbc.com'}/portal`,
     };
     const { subject, html } = getEmailTemplate('membership-confirmation', data);
     await sendEmail(orgEmail, subject, html, { replyTo: 'membership@emaofbc.com' });
   } catch (emailError) {
     console.error('Failed to send confirmation email:', emailError);
-    // Don't throw - email failure shouldn't block the payment processing
   }
 
-  console.log(`Successfully processed membership for organization: ${orgName} (${organization.id})`);
+  console.log(`Membership processed: ${orgName} (${organization.id})`);
+}
+
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  const supabase = createServiceRoleClient();
+  const metadata = (session.metadata || {}) as Metadata;
+  const amountCents = session.amount_total || 0;
+  const stripeRef = (session.payment_intent as string) || session.id;
+
+  if (metadata.flow === 'event_registration' || metadata.eventId) {
+    await handleEventRegistration(supabase, metadata, amountCents, stripeRef);
+  } else {
+    await handleMembershipPayment(supabase, metadata, amountCents, stripeRef);
+  }
 }
 
 async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
   const supabase = createServiceRoleClient();
+  if (!charge.id) throw new Error('Missing charge ID');
 
-  if (!charge.id) {
-    throw new Error('Missing charge ID');
-  }
-
-  // Find membership by stripe_ref
-  const { data: memberships, error: findError } = await supabase
+  const { data: memberships } = await supabase
     .from('memberships')
     .select('*')
     .eq('stripe_ref', charge.id)
     .limit(1);
 
-  if (findError) {
-    console.error('Failed to find membership:', findError);
-    throw findError;
-  }
-
-  if (!memberships || memberships.length === 0) {
-    console.warn(`No membership found for charge: ${charge.id}`);
-    return;
-  }
+  if (!memberships || memberships.length === 0) return;
 
   const membership = memberships[0];
-
-  // Update membership status to reflect refund
-  const { error: updateError } = await supabase
+  await supabase
     .from('memberships')
-    .update({
-      status: 'unpaid',
-      updated_at: new Date().toISOString(),
-    })
+    .update({ status: 'unpaid', updated_at: new Date().toISOString() })
     .eq('id', membership.id);
-
-  if (updateError) {
-    console.error('Failed to update membership status:', updateError);
-    throw updateError;
-  }
-
-  // Get organization for notification email
-  const { data: org } = await supabase
-    .from('organizations')
-    .select('*')
-    .eq('id', membership.org_id)
-    .single();
-
-  if (org) {
-    const refundHtml = `
-      <h2>Membership Refund Processed</h2>
-      <p>We have processed a refund for your EMA of BC membership.</p>
-      <p><strong>Organization:</strong> ${org.name}</p>
-      <p><strong>Amount Refunded:</strong> $${(charge.amount / 100).toFixed(2)}</p>
-      <p>If you have questions about this refund, please contact <a href="mailto:membership@emaofbc.com">membership@emaofbc.com</a></p>
-    `;
-
-    try {
-      await sendEmail(
-        org.email_domain ? `billing@${org.email_domain}` : '',
-        'EMA of BC - Membership Refund Processed',
-        refundHtml
-      );
-    } catch (emailError) {
-      console.error('Failed to send refund email:', emailError);
-    }
-  }
-
-  console.log(`Successfully processed refund for membership: ${membership.id}`);
-}
-
-async function handlePaymentFailed(intent: Stripe.PaymentIntent): Promise<void> {
-  console.error('Payment intent failed:', {
-    id: intent.id,
-    status: intent.status,
-    last_payment_error: intent.last_payment_error?.message,
-  });
-
-  // Log for monitoring - in production, this would trigger alerts
-  // TODO: Send notification to admins about failed payment
 }
 
 export async function POST(req: NextRequest) {
   try {
     const signature = req.headers.get('stripe-signature');
-
     if (!signature) {
       return NextResponse.json({ error: 'Missing signature' }, { status: 400 });
     }
 
     const body = await req.text();
-
     let event: Stripe.Event;
+
     try {
       event = await verifyWebhookSignature(body, signature);
     } catch (error) {
@@ -353,26 +249,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
-    // Handle different event types
     switch (event.type) {
-      case 'charge.succeeded': {
-        const charge = event.data.object as Stripe.Charge;
-        await handleChargeSucceeded(charge);
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.payment_status === 'paid') {
+          await handleCheckoutCompleted(session);
+        }
         break;
       }
-
       case 'charge.refunded': {
         const charge = event.data.object as Stripe.Charge;
         await handleChargeRefunded(charge);
         break;
       }
-
-      case 'payment_intent.payment_failed': {
-        const intent = event.data.object as Stripe.PaymentIntent;
-        await handlePaymentFailed(intent);
-        break;
-      }
-
       default:
         console.log(`Unhandled event type: ${event.type}`);
     }
@@ -380,9 +269,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error('Webhook processing error:', error);
-    return NextResponse.json(
-      { error: 'Webhook processing failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }

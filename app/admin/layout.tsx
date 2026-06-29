@@ -13,6 +13,7 @@ const MENU = [
   { href: '/admin/directory', label: 'Directory', icon: '👥' },
   { href: '/admin/awards', label: 'Awards', icon: '🏆' },
   { href: '/admin/sponsorships', label: 'Sponsorships', icon: '⭐' },
+  { href: '/admin/content', label: 'Content', icon: '📝' },
   { href: '/admin/board', label: 'Board Analytics', icon: '📈' },
   { href: '/admin/newsletter', label: 'Newsletter Studio', icon: '📧' },
   { href: '/admin/ai-event-copy', label: 'AI Copy Generator', icon: '✨' },

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -111,7 +110,7 @@ export default function SponsorshipPage() {
           <div className="rounded-[2rem] bg-forest-gradient px-8 py-14 text-center text-white md:px-16">
             <h2 className="text-3xl font-bold md:text-4xl">Become a sponsor</h2>
             <p className="mx-auto mt-3 max-w-xl text-white/80">Interested in sponsoring an EMA event? Let’s talk options.</p>
-            <a href="mailto:sponsorship@emaofbc.com" className="btn btn-lg btn-light mt-6">Get sponsorship information</a>
+            <a href="/sponsorship/inquiry" className="btn btn-lg btn-light mt-6">Submit sponsorship inquiry</a>
           </div>
         </div>
       </section>

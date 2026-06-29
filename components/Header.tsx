@@ -87,6 +87,7 @@ export function Header() {
         {/* Mobile toggle */}
         <button
           aria-label="Toggle menu"
+          aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
           className="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-full text-navy hover:bg-forest-50"
         >

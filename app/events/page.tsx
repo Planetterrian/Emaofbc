@@ -11,23 +11,25 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 const FILTERS = [
-  { label: 'All Events', href: '/events', active: true },
-  { label: 'Monthly Sessions', href: '/events?type=monthly_session' },
-  { label: 'Workshops', href: '/events?type=workshop' },
-  { label: 'Site Tours', href: '/events?type=tour' },
-  { label: 'Golf', href: '/events?type=golf' },
-  { label: 'Awards Gala', href: '/events?type=gala' },
+  { label: 'All Events', href: '/events', type: undefined },
+  { label: 'Monthly Sessions', href: '/events?type=monthly_session', type: 'monthly_session' },
+  { label: 'Workshops', href: '/events?type=workshop', type: 'workshop' },
+  { label: 'Site Tours', href: '/events?type=tour', type: 'tour' },
+  { label: 'Golf', href: '/events?type=golf', type: 'golf' },
+  { label: 'Awards Gala', href: '/events?type=gala', type: 'gala' },
 ];
 
 const EVENT_EMOJI: Record<string, string> = {
   monthly_session: '🎤', workshop: '🛠️', tour: '🚌', golf: '⛳', gala: '🏆',
 };
 
-async function EventsPage() {
+async function EventsPage({ searchParams }: { searchParams: { type?: string } }) {
   const events = await getPublishedEvents().catch(() => []);
+  const filterType = searchParams?.type;
+  const filtered = filterType ? events.filter((e: any) => e.type === filterType) : events;
   const now = new Date();
-  const upcomingEvents = events.filter((e: any) => new Date(e.starts_at) > now);
-  const pastEvents = events.filter((e: any) => new Date(e.starts_at) <= now);
+  const upcomingEvents = filtered.filter((e: any) => new Date(e.starts_at) > now);
+  const pastEvents = filtered.filter((e: any) => new Date(e.starts_at) <= now);
 
   return (
     <>
@@ -50,7 +52,7 @@ async function EventsPage() {
               key={f.href}
               href={f.href}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                f.active
+                (filterType || undefined) === f.type
                   ? 'bg-forest text-white'
                   : 'border border-black/10 bg-white text-ink-soft hover:border-forest/40 hover:text-forest'
               }`}

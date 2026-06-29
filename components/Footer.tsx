@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { NewsletterSignup } from '@/components/NewsletterSignup';
 
 function LeafMark({ className = '' }: { className?: string }) {
   return (
@@ -26,18 +27,7 @@ export function Footer() {
                 Get upcoming events, workshops, and environmental insights delivered to your inbox.
               </p>
             </div>
-            <form className="flex w-full max-w-md gap-2" action="/contact">
-              <input
-                type="email"
-                required
-                placeholder="you@company.com"
-                aria-label="Email address"
-                className="w-full rounded-full border border-white/20 bg-white/10 px-5 py-3 text-sm text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/40"
-              />
-              <button type="submit" className="btn btn-lg btn-light shrink-0">
-                Subscribe
-              </button>
-            </form>
+            <NewsletterSignup />
           </div>
         </div>
       </div>
@@ -54,7 +44,7 @@ export function Footer() {
             </Link>
             <p className="mt-4 max-w-xs text-sm text-white/70">
               Encouraging education, sharing lessons learned, and creating a forum for environmental
-              management across British Columbia since 2003.
+              management across British Columbia since the 1990s.
             </p>
             <a
               href="https://www.linkedin.com/company/ema-of-bc/"

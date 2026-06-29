@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import type { Metadata } from 'next';
+import { ContactForm } from '@/components/ContactForm';
 
 export const metadata: Metadata = {
   title: 'Contact | EMA of BC',
@@ -13,13 +13,6 @@ const CONTACTS = [
   { label: 'Sponsorship opportunities', email: 'sponsorship@emaofbc.com' },
 ];
 
-const QUICK_LINKS = [
-  { label: 'Become a Member', href: '/join', primary: true },
-  { label: 'View Events', href: '/events' },
-  { label: 'Member Directory', href: '/directory' },
-  { label: 'Sponsorship Opportunities', href: '/sponsorship' },
-  { label: 'Ask the AI Assistant', href: '/member-assistant' },
-];
 
 export default function ContactPage() {
   return (
@@ -76,23 +69,10 @@ export default function ContactPage() {
           </div>
 
           <div>
-            <span className="eyebrow">Quick links</span>
-            <h2 className="mt-3 text-2xl font-bold text-navy">Frequently accessed</h2>
-            <div className="mt-6 space-y-3">
-              {QUICK_LINKS.map((q) => (
-                <Link
-                  key={q.href}
-                  href={q.href}
-                  className={`flex items-center justify-between rounded-2xl px-6 py-5 font-semibold transition ${
-                    q.primary
-                      ? 'bg-forest text-white hover:bg-forest-dark'
-                      : 'border border-black/[0.06] bg-white text-navy hover:border-forest/40 hover:text-forest'
-                  }`}
-                >
-                  {q.label}
-                  <span>→</span>
-                </Link>
-              ))}
+            <span className="eyebrow">Send a message</span>
+            <h2 className="mt-3 text-2xl font-bold text-navy">Contact form</h2>
+            <div className="mt-6">
+              <ContactForm />
             </div>
           </div>
         </div>
